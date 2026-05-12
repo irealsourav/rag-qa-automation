@@ -1,9 +1,9 @@
 import anthropic
-from typing import List, Dict, Optional
+from typing import List, Dict
 from pipeline.vectorstore import VectorStore
 from config import config
 
-SYSTEM_PROMPT = """You are a Senior QA Automation Engineer. 
+SYSTEM_PROMPT = """You are a Senior QA Automation Engineer.
 Your job is to generate high-quality, specific test cases based on requirements, user stories and existing test patterns.
 
 Rules:

@@ -1,5 +1,4 @@
 import chromadb
-from chromadb.config import Settings
 from typing import List, Dict, Optional
 from pipeline.embedder import Embedder
 from config import config
@@ -13,7 +12,7 @@ class VectorStore:
 
     COLLECTIONS = {
         "requirements": "jira_confluence_docs",
-        "codebase":     "test_codebase",
+        "codebase": "test_codebase",
         "test_results": "test_execution_results",
     }
 

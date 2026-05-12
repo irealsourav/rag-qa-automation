@@ -1,9 +1,6 @@
-import pytest
 from pipeline.chunker import TextChunker
 from ingest.test_results_loader import TestResultsLoader
 from ingest.codebase_loader import CodebaseLoader
-import tempfile
-import os
 
 
 class TestChunker:

@@ -3,6 +3,7 @@ import os
 
 load_dotenv()
 
+
 class Config:
     # Anthropic
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
