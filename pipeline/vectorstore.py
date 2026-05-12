@@ -40,7 +40,7 @@ class VectorStore:
 
         ids, texts, metadatas = [], [], []
         for doc in documents:
-            doc_id = str(doc.get("chunk_id") or doc.get("id") or f"doc_{len(ids)}"))
+            doc_id = str(doc.get("chunk_id") or doc.get("id") or f"doc_{len(ids)}")
             content = doc.get("content", "")
             if not content.strip():
                 continue
