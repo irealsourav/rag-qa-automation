@@ -3,6 +3,7 @@ from typing import List, Dict
 from ingest.test_results_loader import TestResultsLoader
 from pipeline.vectorstore import VectorStore
 from config import config
+from qa_outputs.llm_utils import response_text
 
 SYSTEM_PROMPT = """You are a Senior QA Engineer specialising in test reliability.
 Analyse flaky test patterns and provide specific, actionable fixes.
@@ -63,7 +64,7 @@ Please provide:
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
         )
-        return response.content[0].text
+        return response_text(response)
 
     def _analyse_flaky_test(self, candidate: Dict) -> str:
         return self.analyse_single(

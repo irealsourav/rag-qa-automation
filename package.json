@@ -1,0 +1,12 @@
+{
+  "name": "rag-qa-automation-e2e",
+  "private": true,
+  "description": "Cypress tests for the RAG QA Automation API",
+  "scripts": {
+    "cy:run": "cypress run",
+    "cy:open": "cypress open"
+  },
+  "devDependencies": {
+    "cypress": "^16.1.0"
+  }
+}

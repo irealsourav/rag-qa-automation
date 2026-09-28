@@ -46,11 +46,11 @@ class VectorStore:
             ids.append(doc_id)
             texts.append(content)
             metadatas.append({
-                "source":    str(doc.get("source", "")),
+                "source": str(doc.get("source", "")),
                 "original_id": str(doc.get("original_id") or doc.get("id", "")),
                 "file_name": str(doc.get("file_name", "")),
-                "type":      str(doc.get("type", "")),
-                "title":     str(doc.get("title", "")),
+                "type": str(doc.get("type", "")),
+                "title": str(doc.get("title", "")),
             })
 
         embeddings = self.embedder.embed(texts)
@@ -88,9 +88,9 @@ class VectorStore:
         output = []
         for i, doc in enumerate(results["documents"][0]):
             output.append({
-                "content":  doc,
+                "content": doc,
                 "metadata": results["metadatas"][0][i],
-                "score":    1 - results["distances"][0][i],
+                "score": 1 - results["distances"][0][i],
             })
         return output
 

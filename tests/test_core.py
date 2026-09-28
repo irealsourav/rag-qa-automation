@@ -54,6 +54,24 @@ class TestTestResultsLoader:
         assert "PASSED" in statuses
         assert "FAILED" in statuses
 
+    def test_flaky_score_counts_failures_and_errors(self, tmp_path):
+        outcomes = ['', '<failure message="timeout"/>', '<error message="ECONNRESET"/>', '']
+        for i, outcome in enumerate(outcomes):
+            (tmp_path / f"run{i}.xml").write_text(
+                f'<testsuite name="Checkout"><testcase name="test_pay">{outcome}</testcase></testsuite>'
+            )
+        flaky = TestResultsLoader(str(tmp_path)).get_flaky_candidates()
+        assert len(flaky) == 1
+        assert flaky[0]["test_name"] == "test_pay"
+        assert flaky[0]["flaky_score"] == 0.5
+
+    def test_consistently_failing_test_is_not_flaky(self, tmp_path):
+        for i in range(3):
+            (tmp_path / f"run{i}.xml").write_text(
+                '<testsuite name="S"><testcase name="t"><failure/></testcase></testsuite>'
+            )
+        assert TestResultsLoader(str(tmp_path)).get_flaky_candidates() == []
+
 
 class TestCodebaseLoader:
     def test_detect_cypress_file(self, tmp_path):

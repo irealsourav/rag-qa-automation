@@ -2,6 +2,7 @@ import anthropic
 from typing import List, Dict
 from pipeline.vectorstore import VectorStore
 from config import config
+from qa_outputs.llm_utils import response_text
 
 SYSTEM_PROMPT = """You are a QA Automation expert with deep knowledge of test frameworks.
 Answer questions about the provided test codebase clearly and specifically.
@@ -47,7 +48,7 @@ Relevant test code from the codebase:
             messages=messages,
         )
 
-        answer = response.content[0].text
+        answer = response_text(response)
 
         if use_history:
             self.history.append({"role": "user", "content": user_message})

@@ -1,0 +1,117 @@
+name: RAG E2E
+
+# Runs the real RAG pipeline against sample_data/ and calls Claude, so it costs API credits.
+# Trigger it manually: Actions tab -> RAG E2E -> Run workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      question:
+        description: "Question to ask about the sample codebase"
+        default: "Which Cypress tests are likely to be flaky and why?"
+      feature:
+        description: "Feature to generate test cases for"
+        default: "applying a discount code at checkout"
+      run_cypress:
+        description: "Run the Cypress API tests after the demo"
+        type: boolean
+        default: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  rag-e2e:
+    name: Ingest, demo & Cypress
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      QUESTION: ${{ inputs.question }}
+      FEATURE: ${{ inputs.feature }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check API key secret is set
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::Add ANTHROPIC_API_KEY under Settings -> Secrets and variables -> Actions"
+            exit 1
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Cache embedding model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-all-MiniLM-L6-v2
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Ingest sample data
+        run: |
+          python run.py ingest codebase --codebase-path sample_data/codebase
+          python run.py ingest test_results --results-path sample_data/reports
+
+      - name: Start API server
+        env:
+          TEST_RESULTS_PATH: sample_data/reports
+        run: |
+          nohup python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 > server.log 2>&1 &
+          for i in $(seq 1 90); do
+            curl -sf http://127.0.0.1:8000/health && exit 0
+            sleep 2
+          done
+          echo "::error::API server did not start"; cat server.log; exit 1
+
+      - name: RAG demo (see the run summary page)
+        run: |
+          API=http://127.0.0.1:8000
+          {
+            echo "# RAG demo output"
+            echo "## Index"
+            echo '```json'; curl -s $API/health | jq .; echo '```'
+
+            echo "## Ask: $QUESTION"
+            jq -n --arg q "$QUESTION" '{question: $q, reset_history: true}' \
+              | curl -s -X POST $API/ask -H 'Content-Type: application/json' -d @- | jq -r .answer
+
+            echo "## Generate tests: $FEATURE"
+            jq -n --arg f "$FEATURE" '{feature: $f, framework: "Cypress", count: 3}' \
+              | curl -s -X POST $API/generate-tests -H 'Content-Type: application/json' -d @- \
+              | jq -r .test_cases
+
+            echo "## Flaky tests"
+            curl -s "$API/detect-flaky/all?top_n=3" \
+              | jq -r '.flaky_tests[] | "### \(.test_name) (flaky score \(.flaky_score * 100 | round)%)\n\n\(.analysis)\n"'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Set up Node
+        if: inputs.run_cypress
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Run Cypress API tests
+        if: inputs.run_cypress
+        run: |
+          npm ci
+          npx cypress run
+
+      - name: Upload server log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-log
+          path: server.log
+          if-no-files-found: ignore

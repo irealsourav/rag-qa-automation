@@ -2,6 +2,7 @@ import anthropic
 from typing import List, Dict
 from pipeline.vectorstore import VectorStore
 from config import config
+from qa_outputs.llm_utils import response_text
 
 SYSTEM_PROMPT = """You are a Senior QA Automation Engineer.
 Your job is to generate high-quality, specific test cases based on requirements, user stories and existing test patterns.
@@ -62,7 +63,7 @@ Expected Result: ...
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
         )
-        return response.content[0].text
+        return response_text(response)
 
     def generate_from_story(self, story_id: str) -> str:
         results = self.vectorstore.query(

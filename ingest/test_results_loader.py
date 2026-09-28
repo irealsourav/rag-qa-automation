@@ -101,10 +101,11 @@ class TestResultsLoader:
             if len(statuses) >= min_runs:
                 unique = set(statuses)
                 if "PASSED" in unique and ("FAILED" in unique or "ERROR" in unique):
+                    failures = statuses.count("FAILED") + statuses.count("ERROR")
                     flaky.append({
                         "test_name": name,
                         "statuses": statuses,
-                        "flaky_score": statuses.count("FAILED") / len(statuses),
+                        "flaky_score": failures / len(statuses),
                     })
 
         return sorted(flaky, key=lambda x: x["flaky_score"], reverse=True)
