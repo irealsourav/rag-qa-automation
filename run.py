@@ -23,6 +23,7 @@ def ingest(
     chunker = TextChunker()
 
     sources = ["jira", "confluence", "codebase", "test_results"] if source == "all" else [source]
+    failed = []
 
     for src in sources:
         console.print(f"[bold cyan]Ingesting:[/bold cyan] {src}")
@@ -50,6 +51,10 @@ def ingest(
             console.print(f"[bold green]✓ Done:[/bold green] {src}")
         except Exception as e:
             console.print(f"[bold red]✗ Failed:[/bold red] {src} — {e}")
+            failed.append(src)
+
+    if failed:
+        raise typer.Exit(code=1)
 
 
 @app.command()
