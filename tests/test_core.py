@@ -65,6 +65,14 @@ class TestTestResultsLoader:
         assert flaky[0]["test_name"] == "test_pay"
         assert flaky[0]["flaky_score"] == 0.5
 
+    def test_ids_unique_across_reports(self, tmp_path):
+        for i in range(3):
+            (tmp_path / f"run{i}.xml").write_text(
+                '<testsuite name="S"><testcase name="t"/></testsuite>'
+            )
+        ids = [r["id"] for r in TestResultsLoader(str(tmp_path)).load_all()]
+        assert len(ids) == len(set(ids)) == 3
+
     def test_consistently_failing_test_is_not_flaky(self, tmp_path):
         for i in range(3):
             (tmp_path / f"run{i}.xml").write_text(

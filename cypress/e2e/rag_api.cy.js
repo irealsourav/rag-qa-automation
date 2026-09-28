@@ -7,6 +7,9 @@
 const ask = (question) =>
   cy.request('POST', '/ask', { question, reset_history: true }).its('body.answer')
 
+// How many times the consistency test repeats the same question
+const CONSISTENCY_RUNS = 3
+
 const NOT_FOUND = /not (found|present|included|shown|in the (provided )?(context|code|codebase))|no (relevant|information|tests?|mention|evidence)|(doesn't|does not|don't|do not) (contain|include|appear|see|have)|(can't|cannot|unable to) find/i
 
 describe('RAG API', () => {
@@ -39,7 +42,7 @@ describe('RAG API', () => {
     })
 
     it('stays consistent across repeated runs', () => {
-      const runs = Cypress.env('CONSISTENCY_RUNS')
+      const runs = CONSISTENCY_RUNS
       let hits = 0
       Cypress._.times(runs, () => {
         ask('Which Cypress spec file tests the login flow?').then((answer) => {

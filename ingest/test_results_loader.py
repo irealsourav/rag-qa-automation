@@ -73,7 +73,8 @@ class TestResultsLoader:
             content += f"Message: {message}\n"
 
         return {
-            "id": f"{suite_name}::{name}",
+            # The same test appears in every report, so the file keeps the id unique
+            "id": f"{file_path}::{suite_name}::{name}",
             "source": "test_results",
             "test_name": name,
             "suite": suite_name,
