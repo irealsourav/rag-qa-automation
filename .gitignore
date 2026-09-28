@@ -28,7 +28,12 @@ build/
 .pytest_cache/
 .coverage
 htmlcov/
-reports/
+/reports/
 
 # Logs
 *.log
+
+# Cypress
+node_modules/
+cypress/screenshots/
+cypress/videos/

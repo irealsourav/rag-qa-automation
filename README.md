@@ -45,6 +45,18 @@ python run.py coverage --feature-area payments
 python run.py serve
 ```
 
+## Try it with the sample data
+
+`sample_data/` holds two small Cypress specs and three JUnit reports with a few tests
+that pass in some runs and fail in others:
+
+```bash
+python run.py ingest codebase --codebase-path sample_data/codebase
+python run.py ingest test_results --results-path sample_data/reports
+python run.py ask "which checkout tests use fixed waits?"
+TEST_RESULTS_PATH=sample_data/reports python run.py flaky
+```
+
 ## CLI Commands
 
 ```bash
@@ -89,8 +101,43 @@ curl -X POST http://localhost:8000/coverage \
 
 ## Tech stack
 
-- **LLM**: Claude Sonnet 4.5 (Anthropic)
+- **LLM**: Claude Sonnet 5 (Anthropic), override with `LLM_MODEL` in `.env`
 - **Vector store**: ChromaDB (local, persistent)
 - **Embeddings**: sentence-transformers/all-MiniLM-L6-v2 (local, free)
 - **API**: FastAPI + Uvicorn
 - **CLI**: Typer + Rich
+
+## Testing
+
+**Unit tests** cover the deterministic parts (chunker, loaders, flaky scoring) and need no API key:
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/
+```
+
+**Cypress API tests** (`cypress/e2e/rag_api.cy.js`) call the running API, so they use Claude.
+Claude's answers change from run to run, so the tests don't compare exact text. They check:
+
+- response structure (e.g. the requested number of `TC-N` test cases)
+- grounding: answers name files that really exist in the index
+- honest "not found" answers for things that were never indexed
+- a minimum pass rate when the same question is asked several times
+- exact results where the output is deterministic (which tests are flaky and their scores)
+
+```bash
+# with the sample data ingested (see above)
+TEST_RESULTS_PATH=sample_data/reports python -m uvicorn api.main:app --port 8000 &
+npm ci
+npx cypress run
+```
+
+## GitHub Actions
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `CI` | push / PR to `main` | flake8, import checks, unit tests, API import check. No API key needed |
+| `RAG E2E` | manual (Actions -> RAG E2E -> Run workflow) | Ingests `sample_data/`, starts the API, writes Claude's answers to the run's **Summary** page, then runs the Cypress tests |
+
+`RAG E2E` needs an `ANTHROPIC_API_KEY` repository secret
+(Settings -> Secrets and variables -> Actions) and uses API credits on every run.

@@ -29,10 +29,12 @@ class Config:
     API_PORT: int = int(os.getenv("API_PORT", "8000"))
 
     # LLM
-    LLM_MODEL: str = "claude-sonnet-4-5-20251001"
-    MAX_TOKENS: int = 2048
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "claude-sonnet-5")
+    # Sonnet 5 thinks before answering and thinking tokens count toward this limit
+    MAX_TOKENS: int = int(os.getenv("MAX_TOKENS", "16000"))
     CHUNK_SIZE: int = 500
     CHUNK_OVERLAP: int = 50
     TOP_K_RESULTS: int = 5
+
 
 config = Config()

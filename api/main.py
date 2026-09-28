@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 import uvicorn
 
 from pipeline.vectorstore import VectorStore

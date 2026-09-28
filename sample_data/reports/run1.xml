@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Checkout" tests="3">
+    <testcase name="applies a discount code" classname="Checkout" time="2.1"/>
+    <testcase name="completes payment with a saved card" classname="Checkout" time="2.1"/>
+    <testcase name="shows an error for an expired card" classname="Checkout" time="2.1"/>
+  </testsuite>
+  <testsuite name="Login" tests="2">
+    <testcase name="logs in with valid credentials" classname="Login" time="2.1"/>
+    <testcase name="rejects an invalid password" classname="Login" time="2.1"/>
+  </testsuite>
+</testsuites>

@@ -2,6 +2,7 @@ import anthropic
 from typing import List, Dict
 from pipeline.vectorstore import VectorStore
 from config import config
+from qa_outputs.llm_utils import response_text
 
 SYSTEM_PROMPT = """You are a QA coverage analyst.
 Compare requirements against existing test coverage and identify gaps.
@@ -51,7 +52,7 @@ Please provide:
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
         )
-        return response.content[0].text
+        return response_text(response)
 
     def get_untested_stories(self) -> List[str]:
         req_docs = self.vectorstore.query(
