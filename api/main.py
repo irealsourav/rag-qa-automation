@@ -47,6 +47,13 @@ class CoverageRequest(BaseModel):
     feature_area: Optional[str] = None
 
 
+class JiraPushRequest(BaseModel):
+    story_key: str
+    count: Optional[int] = 5
+    framework: Optional[str] = "Cypress"
+    dry_run: Optional[bool] = False
+
+
 class IngestRequest(BaseModel):
     source: str
     project_key: Optional[str] = None
@@ -123,6 +130,20 @@ def analyse_coverage(req: CoverageRequest):
             "analysis": report,
             "untested_stories": untested,
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/jira/push-tests")
+def jira_push_tests(req: JiraPushRequest):
+    from qa_outputs.jira_publisher import JiraTestPublisher
+    from integrations.jira import JiraError
+    try:
+        publisher = JiraTestPublisher(generator=TestCaseGenerator(vectorstore))
+        created = publisher.publish(req.story_key, count=req.count, framework=req.framework, dry_run=req.dry_run)
+        return {"story_key": req.story_key, "dry_run": req.dry_run, "test_cases": created}
+    except JiraError as e:
+        raise HTTPException(status_code=502, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

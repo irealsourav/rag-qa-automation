@@ -5,6 +5,8 @@ from config import config
 
 
 class TestResultsLoader:
+    __test__ = False  # not a pytest test class
+
     """
     Parses JUnit XML / Allure XML test result reports.
     Extracts pass/fail patterns, flaky indicators and error messages.

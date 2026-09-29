@@ -37,3 +37,6 @@ htmlcov/
 node_modules/
 cypress/screenshots/
 cypress/videos/
+
+# Demo app
+demo_app/backend/conduit.db

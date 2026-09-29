@@ -128,6 +128,24 @@ def coverage(
         ))
 
 
+@app.command("jira-push")
+def jira_push(
+    story_key: str = typer.Argument(..., help="Jira story key, e.g. QA-12"),
+    count: int = typer.Option(5, help="Number of test cases"),
+    framework: str = typer.Option("Cypress", help="Test framework"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Generate but do not create Jira issues"),
+):
+    """Generate test cases for a Jira story and create them as linked Jira issues."""
+    from qa_outputs.jira_publisher import JiraTestPublisher
+
+    action = "Previewing" if dry_run else "Creating"
+    console.print(Panel(f"{action} {count} test cases for [bold]{story_key}[/bold]", style="cyan"))
+    created = JiraTestPublisher().publish(story_key, count=count, framework=framework, dry_run=dry_run)
+    for item in created:
+        where = f"[link={item['url']}]{item['key']}[/link]" if item["key"] else "(dry run)"
+        console.print(f"• {where} [{item['category']}] {item['title']}")
+
+
 @app.command()
 def serve():
     """Start the FastAPI server."""

@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt -r requirements-dev.txt
+          pip install -r requirements.txt -r requirements-dev.txt -r demo_app/backend/requirements.txt
 
       - name: Lint with flake8
         run: |
@@ -48,6 +48,7 @@ jobs:
       - name: Run unit tests
         run: |
           pytest tests/ -v --tb=short
+
         env:
           JIRA_URL: "https://mock.atlassian.net"
           JIRA_TOKEN: "mock_token"
@@ -86,3 +87,92 @@ jobs:
           from api.main import app
           print('FastAPI app loaded OK')
           "
+
+  demo-app:
+    name: Demo App (API conformance + UI tests)
+    runs-on: ubuntu-latest
+    env:
+      # Pinned commit of https://github.com/realworld-apps/realworld for the API conformance tests
+      REALWORLD_SPEC_SHA: ebbcdeb8d55b42a3a613c787560498b8ef10003f
+      HURL_VERSION: 8.0.1
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            package-lock.json
+            demo_app/frontend/package-lock.json
+
+      - name: Install backend dependencies
+        run: pip install -r demo_app/backend/requirements.txt
+
+      - name: Install frontend dependencies
+        working-directory: demo_app/frontend
+        run: npm ci
+
+      - name: Frontend unit tests
+        working-directory: demo_app/frontend
+        run: npx vitest run
+
+      - name: Frontend build
+        working-directory: demo_app/frontend
+        run: npx ng build
+
+      - name: Start backend
+        run: |
+          python -m demo_app.backend.seed
+          nohup python -m uvicorn demo_app.backend.main:app --port 3000 > backend.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000/api/tags && exit 0; sleep 1; done
+          echo "::error::Backend did not start"; cat backend.log; exit 1
+
+      - name: API conformance tests (official RealWorld Hurl suite)
+        run: |
+          curl -sSLo hurl.deb "https://github.com/Orange-OpenSource/hurl/releases/download/${HURL_VERSION}/hurl_${HURL_VERSION}_amd64.deb"
+          sudo apt-get install -y ./hurl.deb
+          git clone --quiet https://github.com/realworld-apps/realworld.git realworld-spec
+          git -C realworld-spec checkout --quiet "$REALWORLD_SPEC_SHA"
+          HOST=http://localhost:3000 bash realworld-spec/specs/api/hurl/run-hurl-tests.sh
+
+      - name: Start frontend
+        working-directory: demo_app/frontend
+        run: |
+          nohup npm start > ../../frontend.log 2>&1 &
+          for i in $(seq 1 90); do curl -sf http://localhost:4200/ > /dev/null && exit 0; sleep 2; done
+          echo "::error::Frontend did not start"; cat ../../frontend.log; exit 1
+
+      - name: Cypress UI tests
+        env:
+          CONDUIT_PYTHON: python
+        run: |
+          npm ci
+          npx cypress run --config-file cypress.conduit.config.js
+
+      - name: Upload Cypress screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+          if-no-files-found: ignore
+
+      - name: Upload server logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-app-logs
+          path: |
+            backend.log
+            frontend.log
+          if-no-files-found: ignore

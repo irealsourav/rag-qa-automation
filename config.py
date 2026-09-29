@@ -13,10 +13,16 @@ class Config:
     JIRA_TOKEN: str = os.getenv("JIRA_TOKEN", "")
     JIRA_EMAIL: str = os.getenv("JIRA_EMAIL", "")
     JIRA_PROJECT_KEY: str = os.getenv("JIRA_PROJECT_KEY", "QA")
+    # How generated test cases are created in Jira
+    JIRA_TEST_ISSUE_TYPE: str = os.getenv("JIRA_TEST_ISSUE_TYPE", "Task")
+    JIRA_TEST_LABEL: str = os.getenv("JIRA_TEST_LABEL", "ai-generated-test")
+    JIRA_LINK_TYPE: str = os.getenv("JIRA_LINK_TYPE", "Relates")
 
     # Confluence
     CONFLUENCE_URL: str = os.getenv("CONFLUENCE_URL", "")
     CONFLUENCE_TOKEN: str = os.getenv("CONFLUENCE_TOKEN", "")
+    # Same Atlassian account as Jira unless set separately
+    CONFLUENCE_EMAIL: str = os.getenv("CONFLUENCE_EMAIL", os.getenv("JIRA_EMAIL", ""))
     CONFLUENCE_SPACE_KEY: str = os.getenv("CONFLUENCE_SPACE_KEY", "PROD")
 
     # Paths

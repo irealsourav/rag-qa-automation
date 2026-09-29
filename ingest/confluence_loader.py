@@ -11,11 +11,12 @@ class ConfluenceLoader:
     """
 
     def __init__(self):
-        self.base_url = config.CONFLUENCE_URL
-        self.headers = {
-            "Authorization": f"Bearer {config.CONFLUENCE_TOKEN}",
-            "Accept": "application/json",
-        }
+        # Confluence Cloud lives under /wiki on the Atlassian site
+        base = config.CONFLUENCE_URL.rstrip("/")
+        self.base_url = base if base.endswith("/wiki") else f"{base}/wiki"
+        # Atlassian Cloud API tokens use Basic auth with the account email
+        self.auth = (config.CONFLUENCE_EMAIL, config.CONFLUENCE_TOKEN)
+        self.headers = {"Accept": "application/json"}
 
     def fetch_pages(
         self,
@@ -34,7 +35,7 @@ class ConfluenceLoader:
         if labels:
             params["label"] = ",".join(labels)
 
-        response = requests.get(url, headers=self.headers, params=params)
+        response = requests.get(url, headers=self.headers, params=params, auth=self.auth, timeout=30)
         response.raise_for_status()
         pages = response.json().get("results", [])
         return [self._parse_page(p) for p in pages]
@@ -47,7 +48,7 @@ class ConfluenceLoader:
             "spaceKey": space,
             "expand": "body.storage",
         }
-        response = requests.get(url, headers=self.headers, params=params)
+        response = requests.get(url, headers=self.headers, params=params, auth=self.auth, timeout=30)
         response.raise_for_status()
         results = response.json().get("results", [])
         if results:
@@ -64,7 +65,7 @@ class ConfluenceLoader:
             "source": "confluence",
             "title": page.get("title", ""),
             "space": page.get("space", {}).get("key", ""),
-            "url": f"{self.base_url}/wiki{page.get('_links', {}).get('webui', '')}",
+            "url": f"{self.base_url}{page.get('_links', {}).get('webui', '')}",
             "breadcrumb": " > ".join(ancestors + [page.get("title", "")]),
             "content": f"Title: {page.get('title', '')}\n\n{plain_text}",
             "version": page.get("version", {}).get("number", 1),

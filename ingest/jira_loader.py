@@ -1,20 +1,18 @@
-import requests
 from typing import List, Dict
 from config import config
+from integrations.jira import JiraClient
+
+FIELDS = ["summary", "description", "issuetype", "status", "labels", "priority", "comment"]
 
 
 class JiraLoader:
     """
-    Fetches issues from Jira via REST API v3.
+    Fetches issues from Jira Cloud via REST API v3.
     Pulls stories, bugs, epics and their acceptance criteria.
     """
 
-    def __init__(self):
-        self.base_url = config.JIRA_URL
-        self.headers = {
-            "Authorization": f"Bearer {config.JIRA_TOKEN}",
-            "Accept": "application/json",
-        }
+    def __init__(self, client: JiraClient = None):
+        self.client = client or JiraClient()
 
     def fetch_issues(
         self,
@@ -23,28 +21,14 @@ class JiraLoader:
         max_results: int = 200,
     ) -> List[Dict]:
         project = project_key or config.JIRA_PROJECT_KEY
-        types = ", ".join(issue_types or ["Story", "Bug", "Epic", "Task"])
-        jql = f'project={project} AND issuetype in ({types}) AND status != Done'
-
-        url = f"{self.base_url}/rest/api/3/search"
-        params = {
-            "jql": jql,
-            "maxResults": max_results,
-            "fields": [
-                "summary",
-                "description",
-                "issuetype",
-                "status",
-                "labels",
-                "priority",
-                "customfield_10016",  # story points
-                "comment",
-            ],
-        }
-
-        response = requests.get(url, headers=self.headers, params=params)
-        response.raise_for_status()
-        issues = response.json().get("issues", [])
+        types = ", ".join(f'"{t}"' for t in issue_types or ["Story", "Bug", "Epic", "Task"])
+        # Skip test cases this tool created, so they are not re-ingested as requirements
+        label = config.JIRA_TEST_LABEL
+        jql = (
+            f'project = "{project}" AND issuetype in ({types}) AND statusCategory != Done'
+            f' AND (labels is EMPTY OR labels != "{label}")'
+        )
+        issues = self.client.search(jql, FIELDS, max_results=max_results)
         return [self._parse_issue(i) for i in issues]
 
     def _parse_issue(self, issue: Dict) -> Dict:
@@ -60,7 +44,7 @@ class JiraLoader:
             "description": description,
             "status": fields.get("status", {}).get("name", ""),
             "labels": fields.get("labels", []),
-            "priority": fields.get("priority", {}).get("name", "Medium"),
+            "priority": (fields.get("priority") or {}).get("name", "Medium"),
             "comments": comments,
             "content": self._build_content(fields),
         }
@@ -69,7 +53,7 @@ class JiraLoader:
         parts = []
         parts.append(f"Title: {fields.get('summary', '')}")
         parts.append(f"Type: {fields.get('issuetype', {}).get('name', '')}")
-        parts.append(f"Priority: {fields.get('priority', {}).get('name', '')}")
+        parts.append(f"Priority: {(fields.get('priority') or {}).get('name', '')}")
         desc = self._extract_text(fields.get("description"))
         if desc:
             parts.append(f"Description: {desc}")
