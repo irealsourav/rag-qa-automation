@@ -2,7 +2,7 @@
 
 | Folder | What it checks | Needs |
 |---|---|---|
-| `unit/` | Small, fast checks of individual pieces of Python code | Nothing (no AI, no internet) |
+| `unit/` | Small, fast checks of individual pieces of Python code, including the MCP server (called through a real MCP client, with a fake Jira) | Nothing (no AI, no internet) |
 | `e2e/demo_app/` | The demo website in a real browser, like a user would use it (Cypress) | Demo app running |
 | `e2e/rag_engine_api/` | The AI assistant's REST API, including its AI answers (Cypress) | Assistant running, Claude API key |
 | `evals/` | How good the AI's retrieval is, as a score | Embedding model (downloaded once) |

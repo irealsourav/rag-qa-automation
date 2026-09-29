@@ -97,5 +97,12 @@ def adf_ordered_list(items: List[str]) -> Dict:
     }
 
 
+def adf_bullet_list(items: List[str]) -> Dict:
+    return {
+        "type": "bulletList",
+        "content": [{"type": "listItem", "content": [adf_paragraph(item)]} for item in items],
+    }
+
+
 def adf_doc(*blocks: Dict) -> Dict:
     return {"type": "doc", "version": 1, "content": list(blocks)}

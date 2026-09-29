@@ -13,6 +13,8 @@ class Config:
     JIRA_TOKEN: str = os.getenv("JIRA_TOKEN", "")
     JIRA_EMAIL: str = os.getenv("JIRA_EMAIL", "")
     JIRA_PROJECT_KEY: str = os.getenv("JIRA_PROJECT_KEY", "QA")
+    # Issue type used when creating stories (e.g. through the MCP server)
+    JIRA_STORY_ISSUE_TYPE: str = os.getenv("JIRA_STORY_ISSUE_TYPE", "Story")
     # How generated test cases are created in Jira
     JIRA_TEST_ISSUE_TYPE: str = os.getenv("JIRA_TEST_ISSUE_TYPE", "Task")
     JIRA_TEST_LABEL: str = os.getenv("JIRA_TEST_LABEL", "ai-generated-test")

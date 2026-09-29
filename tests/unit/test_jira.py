@@ -3,39 +3,10 @@ import pytest
 from rag_engine.sources.jira.loader import JiraLoader
 from rag_engine.sources.jira.client import JiraClient, JiraError
 from rag_engine.features.jira_publisher import JiraTestPublisher
-from rag_engine.features.test_generator import TestCase, TestCaseGenerator
-
-
-class FakeResponse:
-    def __init__(self, body, status=200):
-        self.body, self.status_code = body, status
-        self.ok = status < 400
-        self.content = b"x" if body is not None else b""
-        self.text = str(body)
-
-    def json(self):
-        return self.body
-
-
-class FakeSession:
-    """Records requests and answers from a list of (method, path suffix, body) routes."""
-
-    def __init__(self, routes):
-        self.routes, self.calls = list(routes), []
-
-    def request(self, method, url, timeout=None, **kwargs):
-        self.calls.append((method, url, kwargs))
-        for i, (m, suffix, body) in enumerate(self.routes):
-            if m == method and url.endswith(suffix):
-                self.routes.pop(i)
-                return FakeResponse(body)
-        return FakeResponse({"errorMessages": ["no route"]}, status=404)
-
-
-def make_client(routes):
-    client = JiraClient("https://example.atlassian.net/", "me@example.com", "token")
-    client.session = FakeSession(routes)
-    return client
+from rag_engine.features.test_generator import TestCaseGenerator
+from rag_engine.models import TestCase
+from rag_engine.sources.jira.writer import describe_test_case
+from tests.unit.jira_fakes import make_client
 
 
 CASE = TestCase(
@@ -135,7 +106,7 @@ class TestJiraTestPublisher:
         assert [m for m, _, _ in client.session.calls] == ["GET"]
 
     def test_description_is_valid_adf(self):
-        doc = JiraTestPublisher.description(CASE, "QA-7")
+        doc = describe_test_case(CASE, "QA-7")
         assert doc["type"] == "doc" and doc["version"] == 1
         steps = next(b for b in doc["content"] if b["type"] == "orderedList")
         assert len(steps["content"]) == 2

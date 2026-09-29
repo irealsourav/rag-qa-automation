@@ -43,6 +43,7 @@ Files at the top level are setup files: `requirements*.txt` (Python packages),
 | Find flaky tests | Spots tests that sometimes pass and sometimes fail, and suggests why |
 | Find coverage gaps | Compares requirements with tests to show what is not tested |
 | Push tests to Jira | Creates the generated test cases as Jira issues linked to the story |
+| Jira tools for AI chat (MCP) | Lets Claude read Jira, create stories and create manual test cases when you ask it in plain words |
 
 ## Quick start
 
@@ -62,6 +63,7 @@ More commands are in [rag_engine/README.md](rag_engine/README.md).
 | Part | Status |
 |---|---|
 | Features above (generate, ask, flaky, coverage, Jira push) | Working |
+| MCP server for Jira (read, create story, create test cases) | Working, tested against a fake Jira; not yet tried on a real Jira site |
 | Jira retrieval layer + retrieval eval ("Path A" in the design notes) | Working, measured on sample data only |
 | Demo app + its browser tests | Working |
 | Knowledge from backend API specs and frontend pages | Not built yet |

@@ -1,18 +1,15 @@
 from typing import Dict, List
 
-from rag_engine.config import config
-from rag_engine.sources.jira.client import (
-    JiraClient, adf_doc, adf_heading, adf_ordered_list, adf_paragraph,
-)
+from rag_engine.sources.jira.client import JiraClient
 from rag_engine.sources.jira.loader import JiraLoader
-from rag_engine.features.test_generator import TestCase, TestCaseGenerator
+from rag_engine.sources.jira.writer import create_test_cases
+from rag_engine.features.test_generator import TestCaseGenerator
 
 
 class JiraTestPublisher:
     """
-    Generates test cases for a Jira story and creates each one as an issue in the
-    story's project, linked back to the story. Works on plain Jira Cloud (no test
-    management plugin): the issue type, label and link type come from config.
+    Generates test cases for a Jira story with RAG + Claude, then creates each one as an
+    issue linked back to the story (the Jira part is in sources/jira/writer.py).
     """
 
     def __init__(self, generator: TestCaseGenerator = None, client: JiraClient = None):
@@ -40,34 +37,4 @@ class JiraTestPublisher:
         cases = self.generator.generate_cases(story["text"], framework=framework, count=count)
         if dry_run:
             return [{"key": None, "url": None, "title": c.title, "category": c.category} for c in cases]
-
-        issue_type_id = self.client.issue_type_id(story["project"], config.JIRA_TEST_ISSUE_TYPE)
-        created = []
-        for case in cases:
-            key = self.client.create_issue({
-                "project": {"key": story["project"]},
-                "issuetype": {"id": issue_type_id},
-                "summary": f"[Test] {case.title}"[:255],
-                "description": self.description(case, story_key),
-                "labels": [config.JIRA_TEST_LABEL, case.category.replace("_", "-")],
-            })
-            # "Relates" reads the same both ways; for directional types the story is inward
-            self.client.link_issues(config.JIRA_LINK_TYPE, story_key, key)
-            created.append({
-                "key": key,
-                "url": self.client.browse_url(key),
-                "title": case.title,
-                "category": case.category,
-            })
-        return created
-
-    @staticmethod
-    def description(case: TestCase, story_key: str) -> Dict:
-        return adf_doc(
-            adf_paragraph(f"Generated from {story_key} by rag-qa-automation."),
-            adf_paragraph(case.category.replace("_", " "), bold_prefix="Category: "),
-            adf_paragraph(case.preconditions, bold_prefix="Preconditions: "),
-            adf_heading("Steps"),
-            adf_ordered_list(case.steps),
-            adf_paragraph(case.expected_result, bold_prefix="Expected result: "),
-        )
+        return create_test_cases(self.client, story_key, cases, project_key=story["project"])

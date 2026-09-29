@@ -1,8 +1,8 @@
 import anthropic
-from typing import List, Dict, Literal
-from pydantic import BaseModel
+from typing import List, Dict
 from rag_engine.knowledge_base.vectorstore import VectorStore
 from rag_engine.config import config
+from rag_engine.models import TestCase, TestSuite
 
 SYSTEM_PROMPT = """You are a Senior QA Automation Engineer.
 Your job is to generate high-quality, specific test cases based on requirements, user stories and existing test patterns.
@@ -12,22 +12,6 @@ Rules:
 - Cover happy path, edge cases and negative scenarios
 - Be specific — no vague steps like "verify the page works"
 - Match the style of any existing test code provided in the context"""
-
-
-class TestCase(BaseModel):
-    __test__ = False  # not a pytest test class
-
-    title: str
-    category: Literal["happy_path", "edge_case", "negative"]
-    preconditions: str
-    steps: List[str]
-    expected_result: str
-
-
-class TestSuite(BaseModel):
-    __test__ = False  # not a pytest test class
-
-    test_cases: List[TestCase]
 
 
 class TestCaseGenerator:

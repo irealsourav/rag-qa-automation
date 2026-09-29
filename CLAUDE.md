@@ -22,7 +22,8 @@ structure.
 
 ## Layout
 - `rag_engine/` — the AI tool: `sources/<source>/` (one folder per source: read, chunk, index,
-  retrieve) → `knowledge_base/` (shared store + embeddings) → `features/`
+  retrieve) → `knowledge_base/` (shared store + embeddings) → `features/`;
+  used through `cli.py`, `api.py` and `mcp_server.py` (MCP tools for AI clients)
 - `demo_app/` — the app under test (Angular frontend, FastAPI backend)
 - `tests/` — `unit/` (pytest), `e2e/` (Cypress), `evals/` (AI quality scores)
 - `sample_data/` — example tickets, test files and reports

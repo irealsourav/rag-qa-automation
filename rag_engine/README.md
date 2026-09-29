@@ -16,7 +16,7 @@ Playwright, ...) is a new folder that does not touch the others.
 
 | Folder | Reads | Files |
 |---|---|---|
-| `jira/` | Jira tickets: stories, bugs, acceptance criteria | `client.py` (talks to the Jira API), `loader.py` (reads tickets), `index.py` (one chunk per ticket → the `jira` collection), `retriever.py` (finds the most similar tickets) |
+| `jira/` | Jira tickets: stories, bugs, acceptance criteria | `client.py` (talks to the Jira API), `loader.py` (reads tickets), `writer.py` (creates stories and test cases), `index.py` (one chunk per ticket → the `jira` collection), `retriever.py` (finds the most similar tickets) |
 | `confluence/` | Confluence pages | `loader.py` |
 | `test_code/` | Existing test files: Cypress, pytest, Java | `loader.py` |
 | `test_reports/` | JUnit XML test results, to spot flaky tests | `loader.py` |
@@ -45,6 +45,8 @@ move to per-source collections one source at a time.
 |---|---|
 | `cli.py` | The command line (`python -m rag_engine ...`) |
 | `api.py` | The same features as a REST API |
+| `mcp_server.py` | Jira tools for AI clients such as Claude Code (see [MCP server](#mcp-server)) |
+| `models.py` | Shared data shapes, e.g. `TestCase` |
 | `config.py` | Settings, read from `.env` |
 
 ## Setup
@@ -115,6 +117,55 @@ expected result in the description, the labels `ai-generated-test` and its categ
 (`happy-path`, `edge-case`, `negative`), and a `Relates` link to the story. Issues with the
 `ai-generated-test` label are skipped by `ingest jira`, so generated tests are never read
 back in as requirements.
+
+## MCP server
+
+MCP (Model Context Protocol) lets an AI client use tools that we define. With this server,
+you can ask Claude in plain words to read Jira, create a story, and write manual test cases
+for it, and the issues appear in your Jira.
+
+| Tool | What it does | Changes Jira? |
+|---|---|---|
+| `get_issue` | Reads one issue: summary, type, status, description, linked issues | No |
+| `search_issues` | Searches with JQL (must include a limit such as `project = QA`) | No |
+| `create_story` | Creates a story with a description and acceptance criteria | Yes |
+| `create_manual_test_cases` | Creates test cases as issues linked to a story | Yes |
+
+The AI client writes the story and the test cases; the server only creates what it is
+given, using the same Jira code as `jira-push` (`sources/jira/writer.py`). The two tools
+that change Jira are marked as such, so clients ask before using them.
+
+**Use it from Claude Code (in this repo):**
+
+1. Fill in the Jira settings in `.env` (see [Jira integration](#jira-integration)).
+2. Start Claude Code in the repo. It reads `.mcp.json` and asks you to approve the
+   `rag-qa-jira` server. Check it is connected with `/mcp`.
+3. Ask, for example: *"Create a story in QA for password reset by email with three
+   acceptance criteria, then create manual test cases for it."*
+
+If your packages are installed in a virtual environment, start Claude Code with
+`RAG_PYTHON=/path/to/venv/bin/python claude`, because the server is launched with that Python.
+
+**Use it from Claude Desktop:** add this to `claude_desktop_config.json`
+(Settings → Developer → Edit Config), with your own paths:
+
+```json
+{
+  "mcpServers": {
+    "rag-qa-jira": {
+      "command": "/path/to/venv/bin/python",
+      "args": ["-m", "rag_engine.mcp_server"],
+      "env": { "PYTHONPATH": "/path/to/rag-qa-automation" }
+    }
+  }
+}
+```
+
+`PYTHONPATH` lets Python find `rag_engine` whatever folder the server starts in, and the
+settings are still read from the repo's `.env`.
+
+**Try it without an AI client:** `npx @modelcontextprotocol/inspector python -m rag_engine.mcp_server`
+opens a web page where you can call each tool by hand.
 
 ## REST API
 
