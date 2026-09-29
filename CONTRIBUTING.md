@@ -59,11 +59,11 @@ flake8 . --max-line-length=100 --exclude=venv,chroma_db,node_modules --ignore=E5
 
 ```
 rag-qa-automation/
-├── qa_assistant/       ← the AI tool
-│   ├── sources/        ← readers for Jira, Confluence, test code, test reports
-│   ├── knowledge_base/ ← chunk, embed, store and search (the "R" in RAG)
+├── rag_engine/         ← the AI tool (RAG engine)
+│   ├── sources/        ← one folder per source: jira/, confluence/, test_code/, test_reports/
+│   ├── knowledge_base/ ← shared tools: split, embed, store, search
 │   ├── features/       ← test generator, Q&A, flaky detector, coverage, Jira push
-│   ├── cli.py          ← command line (python -m qa_assistant ...)
+│   ├── cli.py          ← command line (python -m rag_engine ...)
 │   └── api.py          ← REST API
 ├── demo_app/           ← the website being tested (Angular + FastAPI)
 ├── tests/              ← unit/, e2e/ (Cypress), evals/
@@ -72,9 +72,13 @@ rag-qa-automation/
 
 Each folder has a README explaining it in plain words.
 
-Adding a new data source? Create a loader in `qa_assistant/sources/` following the same pattern as `jira_loader.py`. Each loader should return `List[Dict]` with at minimum: `id`, `source`, `content`.
+Adding a new data source (e.g. Cypress, API specs, Playwright)? Create a folder for it in `rag_engine/sources/`, following `sources/jira/`:
+- `loader.py` reads the source and returns `List[Dict]` with at minimum `id`, `source`, `content`
+- `index.py` splits it by its natural unit (one ticket, one test block, one endpoint), adds metadata and stores it in its own collection with `get_store("<source>")`
+- `retriever.py` searches that collection
+- add questions for it to `tests/evals/` so its retrieval quality is measured
 
-Adding a new feature? Create a module in `qa_assistant/features/` and expose it via both the CLI (`qa_assistant/cli.py`) and the API (`qa_assistant/api.py`).
+Adding a new feature? Create a module in `rag_engine/features/` and expose it via both the CLI (`rag_engine/cli.py`) and the API (`rag_engine/api.py`).
 
 ---
 

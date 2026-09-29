@@ -3,17 +3,17 @@ from pydantic import BaseModel
 from typing import Optional
 import uvicorn
 
-from qa_assistant.knowledge_base.vectorstore import VectorStore
-from qa_assistant.knowledge_base.chunker import TextChunker
-from qa_assistant.sources.jira_loader import JiraLoader
-from qa_assistant.sources.confluence_loader import ConfluenceLoader
-from qa_assistant.sources.codebase_loader import CodebaseLoader
-from qa_assistant.sources.test_results_loader import TestResultsLoader
-from qa_assistant.features.test_generator import TestCaseGenerator
-from qa_assistant.features.codebase_qa import CodebaseQA
-from qa_assistant.features.flaky_detector import FlakyTestDetector
-from qa_assistant.features.coverage_analyzer import CoverageAnalyzer
-from qa_assistant.config import config
+from rag_engine.knowledge_base.vectorstore import VectorStore
+from rag_engine.knowledge_base.chunker import TextChunker
+from rag_engine.sources.jira.loader import JiraLoader
+from rag_engine.sources.confluence.loader import ConfluenceLoader
+from rag_engine.sources.test_code.loader import CodebaseLoader
+from rag_engine.sources.test_reports.loader import TestResultsLoader
+from rag_engine.features.test_generator import TestCaseGenerator
+from rag_engine.features.codebase_qa import CodebaseQA
+from rag_engine.features.flaky_detector import FlakyTestDetector
+from rag_engine.features.coverage_analyzer import CoverageAnalyzer
+from rag_engine.config import config
 
 app = FastAPI(
     title="RAG QA Automation API",
@@ -136,8 +136,8 @@ def analyse_coverage(req: CoverageRequest):
 
 @app.post("/jira/push-tests")
 def jira_push_tests(req: JiraPushRequest):
-    from qa_assistant.features.jira_publisher import JiraTestPublisher
-    from qa_assistant.sources.jira_client import JiraError
+    from rag_engine.features.jira_publisher import JiraTestPublisher
+    from rag_engine.sources.jira.client import JiraError
     try:
         publisher = JiraTestPublisher(generator=TestCaseGenerator(vectorstore))
         created = publisher.publish(req.story_key, count=req.count, framework=req.framework, dry_run=req.dry_run)
@@ -186,4 +186,4 @@ def _run_ingest(req: IngestRequest):
 
 
 if __name__ == "__main__":
-    uvicorn.run("qa_assistant.api:app", host=config.API_HOST, port=config.API_PORT, reload=True)
+    uvicorn.run("rag_engine.api:app", host=config.API_HOST, port=config.API_PORT, reload=True)

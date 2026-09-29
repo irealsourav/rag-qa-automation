@@ -59,14 +59,14 @@ jobs:
 
       - name: Ingest sample data
         run: |
-          python -m qa_assistant ingest codebase --codebase-path sample_data/cypress_tests
-          python -m qa_assistant ingest test_results --results-path sample_data/test_reports
+          python -m rag_engine ingest codebase --codebase-path sample_data/cypress_tests
+          python -m rag_engine ingest test_results --results-path sample_data/test_reports
 
       - name: Start API server
         env:
           TEST_RESULTS_PATH: sample_data/test_reports
         run: |
-          nohup python -m uvicorn qa_assistant.api:app --host 127.0.0.1 --port 8000 > server.log 2>&1 &
+          nohup python -m uvicorn rag_engine.api:app --host 127.0.0.1 --port 8000 > server.log 2>&1 &
           for i in $(seq 1 90); do
             curl -sf http://127.0.0.1:8000/health && exit 0
             sleep 2
@@ -106,7 +106,7 @@ jobs:
         if: inputs.run_cypress
         run: |
           npm ci
-          npm run test:qa-assistant
+          npm run test:rag-engine
 
       - name: Upload server log
         if: always()

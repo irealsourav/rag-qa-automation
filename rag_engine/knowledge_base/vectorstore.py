@@ -1,7 +1,7 @@
 import chromadb
 from typing import List, Dict, Optional
-from qa_assistant.knowledge_base.embedder import Embedder
-from qa_assistant.config import config
+from rag_engine.knowledge_base.embedder import Embedder
+from rag_engine.config import config
 
 
 class VectorStore:

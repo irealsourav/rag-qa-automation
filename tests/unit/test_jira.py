@@ -1,9 +1,9 @@
 import pytest
 
-from qa_assistant.sources.jira_loader import JiraLoader
-from qa_assistant.sources.jira_client import JiraClient, JiraError
-from qa_assistant.features.jira_publisher import JiraTestPublisher
-from qa_assistant.features.test_generator import TestCase, TestCaseGenerator
+from rag_engine.sources.jira.loader import JiraLoader
+from rag_engine.sources.jira.client import JiraClient, JiraError
+from rag_engine.features.jira_publisher import JiraTestPublisher
+from rag_engine.features.test_generator import TestCase, TestCaseGenerator
 
 
 class FakeResponse:
@@ -58,7 +58,7 @@ class FakeGenerator:
 
 class TestJiraClient:
     def test_requires_credentials(self, monkeypatch):
-        monkeypatch.setattr("qa_assistant.sources.jira_client.config.JIRA_URL", "")
+        monkeypatch.setattr("rag_engine.sources.jira.client.config.JIRA_URL", "")
         with pytest.raises(JiraError):
             JiraClient(email="", token="")
 

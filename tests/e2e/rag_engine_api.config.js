@@ -1,11 +1,11 @@
 const { defineConfig } = require('cypress')
 
-// API tests for the QA assistant's REST API (qa_assistant/api.py). These call Claude.
-// Run: npm run test:qa-assistant
+// API tests for the QA assistant's REST API (rag_engine/api.py). These call Claude.
+// Run: npm run test:rag-engine
 module.exports = defineConfig({
   e2e: {
     baseUrl: process.env.RAG_API_URL || 'http://localhost:8000',
-    specPattern: 'tests/e2e/qa_assistant_api/**/*.cy.js',
+    specPattern: 'tests/e2e/rag_engine_api/**/*.cy.js',
     supportFile: false,
     fixturesFolder: false,
     screenshotsFolder: 'tests/e2e/screenshots',

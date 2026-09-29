@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from typing import List, Dict
-from qa_assistant.config import config
+from rag_engine.config import config
 
 SUPPORTED_EXTENSIONS = {
     ".cy.js", ".cy.ts",   # Cypress

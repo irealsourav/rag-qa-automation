@@ -38,12 +38,12 @@ jobs:
 
       - name: Check imports resolve
         run: |
-          python -c "from qa_assistant.config import config; print('config OK')"
-          python -c "from qa_assistant.knowledge_base.chunker import TextChunker; print('chunker OK')"
-          python -c "from qa_assistant.knowledge_base.embedder import Embedder; print('embedder OK')"
-          python -c "from qa_assistant.sources.codebase_loader import CodebaseLoader; print('codebase_loader OK')"
-          python -c "from qa_assistant.sources.test_results_loader import TestResultsLoader; print('test_results_loader OK')"
-          python -c "from qa_assistant.features.llm_utils import response_text; print('llm_utils OK')"
+          python -c "from rag_engine.config import config; print('config OK')"
+          python -c "from rag_engine.knowledge_base.chunker import TextChunker; print('chunker OK')"
+          python -c "from rag_engine.knowledge_base.embedder import Embedder; print('embedder OK')"
+          python -c "from rag_engine.sources.test_code.loader import CodebaseLoader; print('codebase_loader OK')"
+          python -c "from rag_engine.sources.test_reports.loader import TestResultsLoader; print('test_results_loader OK')"
+          python -c "from rag_engine.features.llm_utils import response_text; print('llm_utils OK')"
 
       - name: Run unit tests
         run: |
@@ -57,7 +57,7 @@ jobs:
 
       - name: Retrieval eval (Jira)
         run: |
-          python -m qa_assistant.knowledge_base.build_jira_index
+          python -m rag_engine.sources.jira.index
           python -m tests.evals.eval_retrieval --min-hit-at-k 0.9 --min-mrr 0.85
         env:
           JIRA_URL: "https://mock.atlassian.net"
@@ -94,7 +94,7 @@ jobs:
           os.environ['JIRA_TOKEN'] = 'mock'
           os.environ['CONFLUENCE_URL'] = 'https://mock.atlassian.net'
           os.environ['CONFLUENCE_TOKEN'] = 'mock'
-          from qa_assistant.api import app
+          from rag_engine.api import app
           print('FastAPI app loaded OK')
           "
 

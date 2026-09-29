@@ -1,6 +1,6 @@
-from qa_assistant.knowledge_base.chunker import TextChunker
-from qa_assistant.sources.test_results_loader import TestResultsLoader
-from qa_assistant.sources.codebase_loader import CodebaseLoader
+from rag_engine.knowledge_base.chunker import TextChunker
+from rag_engine.sources.test_reports.loader import TestResultsLoader
+from rag_engine.sources.test_code.loader import CodebaseLoader
 
 
 class TestChunker:

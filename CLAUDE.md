@@ -21,7 +21,8 @@ structure.
 - Full design and build plan is in docs/rag-design.md — read it before implementing.
 
 ## Layout
-- `qa_assistant/` — the AI tool: `sources/` (readers) → `knowledge_base/` (RAG) → `features/`
+- `rag_engine/` — the AI tool: `sources/<source>/` (one folder per source: read, chunk, index,
+  retrieve) → `knowledge_base/` (shared store + embeddings) → `features/`
 - `demo_app/` — the app under test (Angular frontend, FastAPI backend)
 - `tests/` — `unit/` (pytest), `e2e/` (Cypress), `evals/` (AI quality scores)
 - `sample_data/` — example tickets, test files and reports

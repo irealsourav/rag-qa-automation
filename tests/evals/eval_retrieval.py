@@ -2,7 +2,7 @@
 Path A, step 3: the retrieval eval. Checks whether the retriever finds the right ticket
 for each question in eval_dataset.json.
 
-    python -m qa_assistant.knowledge_base.build_jira_index      # index the sample tickets first
+    python -m rag_engine.sources.jira.index      # index the sample tickets first
     python -m tests.evals.eval_retrieval
 
 Each question has exactly one correct ticket, so:
@@ -17,7 +17,7 @@ import json
 import sys
 from pathlib import Path
 
-from qa_assistant.knowledge_base.jira_retriever import retrieve
+from rag_engine.sources.jira.retriever import retrieve
 
 # Found next to this file, so the eval works from any folder
 DATASET = Path(__file__).parent / "eval_dataset.json"

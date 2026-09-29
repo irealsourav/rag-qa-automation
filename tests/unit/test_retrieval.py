@@ -1,6 +1,6 @@
 import json
 
-from qa_assistant.knowledge_base.build_jira_index import load_sample_tickets, ticket_to_document
+from rag_engine.sources.jira.index import load_sample_tickets, ticket_to_document
 from tests.evals.eval_retrieval import DATASET, reciprocal_rank
 
 TICKET = {

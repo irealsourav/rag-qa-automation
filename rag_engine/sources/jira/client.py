@@ -2,7 +2,7 @@ from typing import Dict, List, Optional
 
 import requests
 
-from qa_assistant.config import config
+from rag_engine.config import config
 
 
 class JiraError(Exception):

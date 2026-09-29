@@ -1,19 +1,17 @@
 """
-Shared settings for the Jira collection.
+Shared LangChain vector store, used by every source that has its own collection
+(sources/jira/ today; cypress/, api/ and others later).
 
-build_index.py (writing) and jira_retriever.py (reading) must use the same collection
-and the same embedding model, otherwise queries are compared against vectors made by a
-different model. Keeping both here means they can't drift apart.
+Writing (a source's index.py) and reading (its retriever.py) must use the same embedding
+model, otherwise queries are compared against vectors made by a different model. Keeping
+the model here means every source uses the same one.
 """
 from functools import lru_cache
 
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 
-from qa_assistant.config import config
-
-# One collection per knowledge source (docs/rag-design.md, section 4)
-JIRA_COLLECTION = "jira"
+from rag_engine.config import config
 
 # Same local model as the rest of the repo: 384-dimension vectors, no API key needed
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
@@ -29,9 +27,10 @@ def get_embeddings() -> HuggingFaceEmbeddings:
     )
 
 
-def get_jira_store(persist_directory: str = None) -> Chroma:
+def get_store(collection_name: str, persist_directory: str = None) -> Chroma:
+    """One collection per source (docs/rag-design.md, section 4), e.g. get_store("jira")."""
     return Chroma(
-        collection_name=JIRA_COLLECTION,
+        collection_name=collection_name,
         embedding_function=get_embeddings(),
         # Chroma saves to this folder automatically; there is no persist() call any more
         persist_directory=persist_directory or config.CHROMA_DB_PATH,

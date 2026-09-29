@@ -16,8 +16,8 @@ def ingest(
     results_path: str = typer.Option(None, help="Path to test result XML files"),
 ):
     """Ingest data into the vector store."""
-    from qa_assistant.knowledge_base.vectorstore import VectorStore
-    from qa_assistant.knowledge_base.chunker import TextChunker
+    from rag_engine.knowledge_base.vectorstore import VectorStore
+    from rag_engine.knowledge_base.chunker import TextChunker
 
     vs = VectorStore()
     chunker = TextChunker()
@@ -29,22 +29,22 @@ def ingest(
         console.print(f"[bold cyan]Ingesting:[/bold cyan] {src}")
         try:
             if src == "jira":
-                from qa_assistant.sources.jira_loader import JiraLoader
+                from rag_engine.sources.jira.loader import JiraLoader
                 docs = JiraLoader().fetch_issues(project_key=project_key)
                 vs.upsert(chunker.chunk_documents(docs), "requirements")
 
             elif src == "confluence":
-                from qa_assistant.sources.confluence_loader import ConfluenceLoader
+                from rag_engine.sources.confluence.loader import ConfluenceLoader
                 docs = ConfluenceLoader().fetch_pages(space_key=space_key)
                 vs.upsert(chunker.chunk_documents(docs), "requirements")
 
             elif src == "codebase":
-                from qa_assistant.sources.codebase_loader import CodebaseLoader
+                from rag_engine.sources.test_code.loader import CodebaseLoader
                 docs = CodebaseLoader(codebase_path).load_all()
                 vs.upsert(chunker.chunk_documents(docs), "codebase")
 
             elif src == "test_results":
-                from qa_assistant.sources.test_results_loader import TestResultsLoader
+                from rag_engine.sources.test_reports.loader import TestResultsLoader
                 docs = TestResultsLoader(results_path).load_all()
                 vs.upsert(chunker.chunk_documents(docs), "test_results")
 
@@ -64,8 +64,8 @@ def generate(
     count: int = typer.Option(5, help="Number of test cases"),
 ):
     """Generate test cases for a feature."""
-    from qa_assistant.knowledge_base.vectorstore import VectorStore
-    from qa_assistant.features.test_generator import TestCaseGenerator
+    from rag_engine.knowledge_base.vectorstore import VectorStore
+    from rag_engine.features.test_generator import TestCaseGenerator
 
     console.print(Panel(f"Generating {count} test cases for: [bold]{feature}[/bold]", style="cyan"))
     result = TestCaseGenerator(VectorStore()).generate(feature, framework, count)
@@ -77,8 +77,8 @@ def ask(
     question: str = typer.Argument(..., help="Question about the test codebase"),
 ):
     """Ask a question about the test codebase."""
-    from qa_assistant.knowledge_base.vectorstore import VectorStore
-    from qa_assistant.features.codebase_qa import CodebaseQA
+    from rag_engine.knowledge_base.vectorstore import VectorStore
+    from rag_engine.features.codebase_qa import CodebaseQA
 
     console.print(Panel(f"Q: [bold]{question}[/bold]", style="blue"))
     answer = CodebaseQA(VectorStore()).ask(question)
@@ -90,8 +90,8 @@ def flaky(
     top_n: int = typer.Option(10, help="Number of flaky tests to analyse"),
 ):
     """Detect and analyse flaky tests."""
-    from qa_assistant.knowledge_base.vectorstore import VectorStore
-    from qa_assistant.features.flaky_detector import FlakyTestDetector
+    from rag_engine.knowledge_base.vectorstore import VectorStore
+    from rag_engine.features.flaky_detector import FlakyTestDetector
 
     console.print(Panel("Analysing flaky tests...", style="yellow"))
     results = FlakyTestDetector(VectorStore()).detect_and_fix(top_n=top_n)
@@ -112,8 +112,8 @@ def coverage(
     feature_area: str = typer.Option(None, help="Feature area to analyse (or all)"),
 ):
     """Analyse test coverage gaps."""
-    from qa_assistant.knowledge_base.vectorstore import VectorStore
-    from qa_assistant.features.coverage_analyzer import CoverageAnalyzer
+    from rag_engine.knowledge_base.vectorstore import VectorStore
+    from rag_engine.features.coverage_analyzer import CoverageAnalyzer
 
     console.print(Panel(f"Coverage analysis: {feature_area or 'all features'}", style="green"))
     analyzer = CoverageAnalyzer(VectorStore())
@@ -136,7 +136,7 @@ def jira_push(
     dry_run: bool = typer.Option(False, "--dry-run", help="Generate but do not create Jira issues"),
 ):
     """Generate test cases for a Jira story and create them as linked Jira issues."""
-    from qa_assistant.features.jira_publisher import JiraTestPublisher
+    from rag_engine.features.jira_publisher import JiraTestPublisher
 
     action = "Previewing" if dry_run else "Creating"
     console.print(Panel(f"{action} {count} test cases for [bold]{story_key}[/bold]", style="cyan"))
@@ -150,9 +150,9 @@ def jira_push(
 def serve():
     """Start the FastAPI server."""
     import uvicorn
-    from qa_assistant.config import config
+    from rag_engine.config import config
     console.print(Panel(f"Starting API server at http://{config.API_HOST}:{config.API_PORT}", style="cyan"))
-    uvicorn.run("qa_assistant.api:app", host=config.API_HOST, port=config.API_PORT, reload=True)
+    uvicorn.run("rag_engine.api:app", host=config.API_HOST, port=config.API_PORT, reload=True)
 
 
 if __name__ == "__main__":

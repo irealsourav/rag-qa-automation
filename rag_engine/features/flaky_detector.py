@@ -1,9 +1,9 @@
 import anthropic
 from typing import List, Dict
-from qa_assistant.sources.test_results_loader import TestResultsLoader
-from qa_assistant.knowledge_base.vectorstore import VectorStore
-from qa_assistant.config import config
-from qa_assistant.features.llm_utils import response_text
+from rag_engine.sources.test_reports.loader import TestResultsLoader
+from rag_engine.knowledge_base.vectorstore import VectorStore
+from rag_engine.config import config
+from rag_engine.features.llm_utils import response_text
 
 SYSTEM_PROMPT = """You are a Senior QA Engineer specialising in test reliability.
 Analyse flaky test patterns and provide specific, actionable fixes.

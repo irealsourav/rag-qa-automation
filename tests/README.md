@@ -4,7 +4,7 @@
 |---|---|---|
 | `unit/` | Small, fast checks of individual pieces of Python code | Nothing (no AI, no internet) |
 | `e2e/demo_app/` | The demo website in a real browser, like a user would use it (Cypress) | Demo app running |
-| `e2e/qa_assistant_api/` | The AI assistant's REST API, including its AI answers (Cypress) | Assistant running, Claude API key |
+| `e2e/rag_engine_api/` | The AI assistant's REST API, including its AI answers (Cypress) | Assistant running, Claude API key |
 | `evals/` | How good the AI's retrieval is, as a score | Embedding model (downloaded once) |
 
 ## Unit tests
@@ -42,11 +42,11 @@ They check things that must be true every time:
 - exact results where the output does not come from the AI (which tests are flaky)
 
 ```bash
-python -m qa_assistant ingest codebase --codebase-path sample_data/cypress_tests
-python -m qa_assistant ingest test_results --results-path sample_data/test_reports
-TEST_RESULTS_PATH=sample_data/test_reports python -m uvicorn qa_assistant.api:app --port 8000 &
+python -m rag_engine ingest codebase --codebase-path sample_data/cypress_tests
+python -m rag_engine ingest test_results --results-path sample_data/test_reports
+TEST_RESULTS_PATH=sample_data/test_reports python -m uvicorn rag_engine.api:app --port 8000 &
 npm ci
-npm run test:qa-assistant
+npm run test:rag-engine
 ```
 
 These call Claude, so they need `ANTHROPIC_API_KEY` and cost API credits.
@@ -58,7 +58,7 @@ answers, plus a score. `evals/eval_retrieval.py` asks 18 questions and checks wh
 Jira retriever finds the right ticket.
 
 ```bash
-python -m qa_assistant.knowledge_base.build_jira_index
+python -m rag_engine.sources.jira.index
 python -m tests.evals.eval_retrieval --min-hit-at-k 0.9 --min-mrr 0.85
 ```
 

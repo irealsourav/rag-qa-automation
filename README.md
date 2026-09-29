@@ -24,7 +24,7 @@ are then based on your project, not just on what the AI generally knows.
 
 | Folder | In plain words | Details |
 |---|---|---|
-| [`qa_assistant/`](qa_assistant/) | **The AI tool itself.** Reads your sources, stores the knowledge, and offers the features below. | [README](qa_assistant/README.md) |
+| [`rag_engine/`](rag_engine/) | **The AI tool itself** (the RAG engine). Reads each source (Jira, test code, test reports, ...), stores the knowledge, and offers the features below. | [README](rag_engine/README.md) |
 | [`demo_app/`](demo_app/) | **A small example website to test**: a blogging app called Conduit. It gives the tool and the tests something real to work on. | [README](demo_app/README.md) |
 | [`tests/`](tests/) | **Everything that checks quality**: quick code checks, browser tests of the demo website, and scores for how good the AI's answers are. | [README](tests/README.md) |
 | [`sample_data/`](sample_data/) | **Example inputs**: made-up Jira tickets, test files and test reports, so everything can be tried without real company data. | [README](sample_data/README.md) |
@@ -51,11 +51,11 @@ pip install -r requirements.txt
 cp .env.example .env                     # then add your ANTHROPIC_API_KEY
 
 # Load the example data, then ask a question
-python -m qa_assistant ingest codebase --codebase-path sample_data/cypress_tests
-python -m qa_assistant ask "which checkout tests use fixed waits?"
+python -m rag_engine ingest codebase --codebase-path sample_data/cypress_tests
+python -m rag_engine ask "which checkout tests use fixed waits?"
 ```
 
-More commands are in [qa_assistant/README.md](qa_assistant/README.md).
+More commands are in [rag_engine/README.md](rag_engine/README.md).
 
 ## Project status
 

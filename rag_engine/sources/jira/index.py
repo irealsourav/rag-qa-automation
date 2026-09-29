@@ -2,8 +2,8 @@
 Path A, step 1: load Jira tickets, make one Document per ticket, embed them and store
 them in the "jira" collection.
 
-    python -m qa_assistant.knowledge_base.build_jira_index               # sample tickets in sample_data/jira/
-    python -m qa_assistant.knowledge_base.build_jira_index --from-jira   # real tickets (JIRA_* settings in .env)
+    python -m rag_engine.sources.jira.index               # sample tickets in sample_data/jira/
+    python -m rag_engine.sources.jira.index --from-jira   # real tickets (JIRA_* settings in .env)
 """
 import argparse
 import json
@@ -11,7 +11,10 @@ from typing import Dict, List
 
 from langchain_core.documents import Document
 
-from qa_assistant.knowledge_base.jira_store import get_jira_store
+from rag_engine.knowledge_base.langchain_store import get_store
+
+# This source's own collection in ChromaDB (one collection per source)
+COLLECTION = "jira"
 
 SAMPLE_TICKETS = "sample_data/jira/tickets.json"
 
@@ -23,7 +26,7 @@ def load_sample_tickets(path: str = SAMPLE_TICKETS) -> List[Dict]:
 
 def load_jira_tickets(project_key: str = None) -> List[Dict]:
     """Reads tickets from Jira Cloud and converts them to the same shape as the sample file."""
-    from qa_assistant.sources.jira_loader import JiraLoader
+    from rag_engine.sources.jira.loader import JiraLoader
 
     tickets = []
     for issue in JiraLoader().fetch_issues(project_key=project_key):
@@ -61,7 +64,7 @@ def ticket_to_document(ticket: Dict) -> Document:
 
 
 def build_index(tickets: List[Dict], persist_directory: str = None) -> int:
-    store = get_jira_store(persist_directory)
+    store = get_store(COLLECTION, persist_directory)
     # Start from an empty collection so a rebuild never leaves deleted or duplicate tickets behind
     store.reset_collection()
     documents = [ticket_to_document(t) for t in tickets]

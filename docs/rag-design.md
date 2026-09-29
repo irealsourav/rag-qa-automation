@@ -148,8 +148,8 @@ loop -> full evals in CI. Built properly over weeks.
 
 ## 9. Reference code — Path A
 
-> **Status (2026-09-29): Path A is implemented** in `qa_assistant/knowledge_base/`
-> (`jira_store.py`, `build_jira_index.py`, `jira_retriever.py`) and `tests/evals/`. The code below
+> **Status (2026-09-29): Path A is implemented** in `rag_engine/sources/jira/`
+> (`index.py`, `retriever.py`), `rag_engine/knowledge_base/langchain_store.py` and `tests/evals/`. The code below
 > is the original sketch and no longer runs on current LangChain (1.x):
 > - `langchain.schema` was removed; `Document` now comes from `langchain_core.documents`.
 > - `langchain-community` is being sunset. Chroma and HuggingFace embeddings moved to their

@@ -1,6 +1,6 @@
 from typing import List, Dict
-from qa_assistant.config import config
-from qa_assistant.sources.jira_client import JiraClient
+from rag_engine.config import config
+from rag_engine.sources.jira.client import JiraClient
 
 FIELDS = ["summary", "description", "issuetype", "status", "labels", "priority", "comment"]
 

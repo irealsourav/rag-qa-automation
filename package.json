@@ -4,7 +4,7 @@
   "description": "Cypress tests for the demo app and the QA assistant API",
   "scripts": {
     "test:demo-app": "cypress run --config-file tests/e2e/demo_app.config.js",
-    "test:qa-assistant": "cypress run --config-file tests/e2e/qa_assistant_api.config.js",
+    "test:rag-engine": "cypress run --config-file tests/e2e/rag_engine_api.config.js",
     "cy:open": "cypress open --config-file tests/e2e/demo_app.config.js"
   },
   "devDependencies": {

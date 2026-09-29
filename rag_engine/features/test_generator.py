@@ -1,8 +1,8 @@
 import anthropic
 from typing import List, Dict, Literal
 from pydantic import BaseModel
-from qa_assistant.knowledge_base.vectorstore import VectorStore
-from qa_assistant.config import config
+from rag_engine.knowledge_base.vectorstore import VectorStore
+from rag_engine.config import config
 
 SYSTEM_PROMPT = """You are a Senior QA Automation Engineer.
 Your job is to generate high-quality, specific test cases based on requirements, user stories and existing test patterns.

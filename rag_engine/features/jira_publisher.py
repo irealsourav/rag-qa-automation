@@ -1,11 +1,11 @@
 from typing import Dict, List
 
-from qa_assistant.config import config
-from qa_assistant.sources.jira_client import (
+from rag_engine.config import config
+from rag_engine.sources.jira.client import (
     JiraClient, adf_doc, adf_heading, adf_ordered_list, adf_paragraph,
 )
-from qa_assistant.sources.jira_loader import JiraLoader
-from qa_assistant.features.test_generator import TestCase, TestCaseGenerator
+from rag_engine.sources.jira.loader import JiraLoader
+from rag_engine.features.test_generator import TestCase, TestCaseGenerator
 
 
 class JiraTestPublisher:

@@ -1,5 +1,5 @@
 from typing import List, Dict
-from qa_assistant.config import config
+from rag_engine.config import config
 
 
 class TextChunker:

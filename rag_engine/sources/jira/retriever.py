@@ -1,14 +1,15 @@
 """
 Path A, step 2: the R in RAG. Finds the Jira tickets most similar in meaning to a question.
 
-    python -m qa_assistant.knowledge_base.jira_retriever "how is a failed login handled?"
+    python -m rag_engine.sources.jira.retriever "how is a failed login handled?"
 """
 import sys
 from typing import List, Tuple
 
 from langchain_core.vectorstores import VectorStoreRetriever
 
-from qa_assistant.knowledge_base.jira_store import get_jira_store
+from rag_engine.knowledge_base.langchain_store import get_store
+from rag_engine.sources.jira.index import COLLECTION
 
 
 def get_jira_retriever(k: int = 3, feature: str = None) -> VectorStoreRetriever:
@@ -16,7 +17,7 @@ def get_jira_retriever(k: int = 3, feature: str = None) -> VectorStoreRetriever:
     if feature:
         # Metadata filter: only tickets whose "feature" matches, e.g. "auth"
         search_kwargs["filter"] = {"feature": feature}
-    return get_jira_store().as_retriever(search_kwargs=search_kwargs)
+    return get_store(COLLECTION).as_retriever(search_kwargs=search_kwargs)
 
 
 def retrieve(query: str, k: int = 3, feature: str = None) -> List[Tuple[str, str]]:
