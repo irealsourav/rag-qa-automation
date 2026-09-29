@@ -49,6 +49,16 @@ jobs:
         run: |
           pytest tests/ -v --tb=short
 
+      - name: Cache embedding model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-all-MiniLM-L6-v2
+
+      - name: Retrieval eval (Jira)
+        run: |
+          python -m retrieval.build_index
+          python -m evals.eval_retrieval --min-hit-at-k 0.9 --min-mrr 0.85
         env:
           JIRA_URL: "https://mock.atlassian.net"
           JIRA_TOKEN: "mock_token"

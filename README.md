@@ -73,6 +73,34 @@ python run.py jira-push QA-12 --count 5 [--dry-run]
 python run.py serve
 ```
 
+## Retrieval layer + eval (Path A)
+
+Work in progress, following [docs/rag-design.md](docs/rag-design.md). Path A is a Jira
+retrieval layer built with LangChain parts, plus an eval that measures it.
+
+| File | What it does |
+|---|---|
+| `retrieval/store.py` | Shared settings: the `jira` Chroma collection and the embedding model |
+| `retrieval/build_index.py` | Loads tickets, makes one chunk per ticket (title + description + acceptance criteria) with metadata, stores them |
+| `retrieval/jira_retriever.py` | `retrieve(query, k, feature=None)`: the most similar tickets, optionally filtered by feature |
+| `evals/eval_dataset.json` | 18 questions, each with the ticket that should be found |
+| `evals/eval_retrieval.py` | Scores hit@1, hit@k and MRR; exits 1 below the thresholds |
+
+```bash
+python -m retrieval.build_index                         # 18 sample tickets (or --from-jira)
+python -m retrieval.jira_retriever "how is a failed login handled?"
+python -m evals.eval_retrieval --min-hit-at-k 0.9 --min-mrr 0.85
+```
+
+Current result on the sample data: hit@1 100%, hit@3 100%, MRR 1.00. A keyword-overlap
+baseline gets 50% hit@1 on the same questions, so the eval does separate semantic retrieval
+from word matching. The tickets and questions were written together, though, so real
+tickets and real questions are needed before these numbers mean much. CI runs this eval on
+every push.
+
+Not built yet (Path B): Cypress/backend/frontend collections, the router, the LangGraph
+self-healing loop, generation and healing evals.
+
 ## Jira integration
 
 Works with plain Jira Cloud; no test-management plugin is needed.

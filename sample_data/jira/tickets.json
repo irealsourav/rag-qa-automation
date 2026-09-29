@@ -1,0 +1,172 @@
+[
+  {
+    "id": "QA-101", "type": "Story", "feature": "auth", "created": "2026-01-05",
+    "title": "Login with valid credentials",
+    "description": "As a registered user I want to sign in with my email and password so that I can write articles and comment.",
+    "acceptance_criteria": [
+      "Given a registered email and matching password, the user is signed in",
+      "After signing in the user is redirected to the home page",
+      "The navbar shows the username instead of the Sign in link"
+    ]
+  },
+  {
+    "id": "QA-102", "type": "Story", "feature": "auth", "created": "2026-01-05",
+    "title": "Login with wrong password",
+    "description": "When the password does not match the account, sign-in is rejected and the reason is shown on the login form.",
+    "acceptance_criteria": [
+      "The API responds with 401 and the error 'credentials invalid'",
+      "The error message is shown above the form",
+      "The user stays on the login page and the password field keeps focus"
+    ]
+  },
+  {
+    "id": "QA-103", "type": "Story", "feature": "auth", "created": "2026-01-06",
+    "title": "Register a new account",
+    "description": "A visitor can create an account with a username, email address and password from the Sign up page.",
+    "acceptance_criteria": [
+      "Username, email and password are required",
+      "After registering the user is signed in and taken to the home page"
+    ]
+  },
+  {
+    "id": "QA-104", "type": "Story", "feature": "auth", "created": "2026-01-06",
+    "title": "Prevent duplicate usernames and emails at sign-up",
+    "description": "Two accounts must never share the same username or email address.",
+    "acceptance_criteria": [
+      "Registering with a taken username returns 409 'username has already been taken'",
+      "Registering with a taken email returns 409 'email has already been taken'",
+      "The form shows the conflict error and keeps the entered values"
+    ]
+  },
+  {
+    "id": "QA-105", "type": "Story", "feature": "auth", "created": "2026-01-07",
+    "title": "Password must be at least 8 characters",
+    "description": "Short passwords are rejected on registration and when changing the password in settings.",
+    "acceptance_criteria": [
+      "A password with fewer than 8 characters returns 422",
+      "A password with exactly 8 characters is accepted"
+    ]
+  },
+  {
+    "id": "QA-106", "type": "Story", "feature": "auth", "created": "2026-01-07",
+    "title": "Log out from the settings page",
+    "description": "A signed-in user ends their session with the logout button at the bottom of Settings.",
+    "acceptance_criteria": [
+      "Clicking 'Or click here to logout' removes the stored JWT",
+      "The user is taken to the home page and the navbar shows Sign in"
+    ]
+  },
+  {
+    "id": "QA-107", "type": "Story", "feature": "settings", "created": "2026-01-08",
+    "title": "Update profile settings",
+    "description": "Users can change their profile image URL, bio, username and email on the Settings page.",
+    "acceptance_criteria": [
+      "Saved changes are visible on the user's profile page",
+      "An empty bio is stored as no bio"
+    ]
+  },
+  {
+    "id": "QA-108", "type": "Story", "feature": "feed", "created": "2026-01-09",
+    "title": "Global feed shows newest articles first with pagination",
+    "description": "The Global Feed tab on the home page lists all articles, most recent first, ten per page.",
+    "acceptance_criteria": [
+      "Articles are ordered by creation date, newest first",
+      "Each page shows at most 10 articles",
+      "Page buttons below the list move between pages"
+    ]
+  },
+  {
+    "id": "QA-109", "type": "Story", "feature": "feed", "created": "2026-01-09",
+    "title": "Your Feed shows articles from followed authors",
+    "description": "Signed-in users get a Your Feed tab listing only articles written by authors they follow.",
+    "acceptance_criteria": [
+      "Articles from authors the user does not follow are not listed",
+      "The tab is only visible when signed in"
+    ]
+  },
+  {
+    "id": "QA-110", "type": "Story", "feature": "tags", "created": "2026-01-10",
+    "title": "Filter articles by tag",
+    "description": "Clicking a tag in the Popular Tags sidebar shows only articles with that tag.",
+    "acceptance_criteria": [
+      "The URL changes to /tag/<tag>",
+      "A tab with the tag name becomes active",
+      "Only articles containing that tag are listed"
+    ]
+  },
+  {
+    "id": "QA-111", "type": "Story", "feature": "articles", "created": "2026-01-12",
+    "title": "Create an article with markdown and tags",
+    "description": "Signed-in users write articles in the editor with a title, a short description, a markdown body and tags.",
+    "acceptance_criteria": [
+      "Title, description and body are required",
+      "Tags are added by pressing Enter in the tags field",
+      "The markdown body is rendered as HTML on the article page"
+    ]
+  },
+  {
+    "id": "QA-112", "type": "Story", "feature": "articles", "created": "2026-01-12",
+    "title": "Only the author can edit or delete an article",
+    "description": "Edit and delete actions are restricted to the person who wrote the article.",
+    "acceptance_criteria": [
+      "Edit Article and Delete Article buttons are only shown to the author",
+      "Updating or deleting someone else's article returns 403"
+    ]
+  },
+  {
+    "id": "QA-113", "type": "Story", "feature": "favorites", "created": "2026-01-13",
+    "title": "Favorite and unfavorite an article",
+    "description": "Signed-in users mark articles as favorites with the heart button, and the favorites count updates.",
+    "acceptance_criteria": [
+      "Favoriting increases the counter by one and the button switches to Unfavorite",
+      "Unfavoriting decreases the counter by one",
+      "Favorited articles appear on the user's Favorited Articles tab"
+    ]
+  },
+  {
+    "id": "QA-114", "type": "Story", "feature": "profiles", "created": "2026-01-13",
+    "title": "Follow and unfollow users from their profile",
+    "description": "The profile page has a Follow button so users can subscribe to another author.",
+    "acceptance_criteria": [
+      "Clicking Follow switches the button to Unfollow",
+      "Following is not possible when signed out"
+    ]
+  },
+  {
+    "id": "QA-115", "type": "Story", "feature": "comments", "created": "2026-01-14",
+    "title": "Add and delete comments on an article",
+    "description": "Signed-in users post comments under an article and can remove their own comments.",
+    "acceptance_criteria": [
+      "A new comment appears at the top of the comment list",
+      "The trash icon is only shown on the user's own comments",
+      "Deleting someone else's comment returns 403"
+    ]
+  },
+  {
+    "id": "QA-116", "type": "Bug", "feature": "auth", "created": "2026-02-02",
+    "title": "Expired session is not detected",
+    "description": "After the JWT expires the app still shows the user as signed in, and every action fails with 401 without explanation.",
+    "acceptance_criteria": [
+      "When the API returns 401 for an expired token, the token is cleared",
+      "The user is sent to the login page with a message that the session ended"
+    ]
+  },
+  {
+    "id": "QA-117", "type": "Bug", "feature": "articles", "created": "2026-02-05",
+    "title": "Articles with the same title get the same slug",
+    "description": "Publishing a second article with an existing title fails because both would get the same URL slug.",
+    "acceptance_criteria": [
+      "The second article gets a unique slug with a short suffix",
+      "Both articles open at their own URL"
+    ]
+  },
+  {
+    "id": "QA-118", "type": "Story", "feature": "feed", "created": "2026-02-10",
+    "title": "Empty state for feeds without articles",
+    "description": "When a feed or tag has no articles, a friendly message is shown instead of a blank area.",
+    "acceptance_criteria": [
+      "The Global Feed shows 'No articles are here... yet.'",
+      "Your Feed suggests following users or visiting the Global Feed"
+    ]
+  }
+]
