@@ -50,7 +50,7 @@ Always branch from `main`.
 
 Run linting before committing:
 ```bash
-flake8 . --max-line-length=100 --exclude=venv,chroma_db
+flake8 . --max-line-length=100 --exclude=venv,chroma_db,node_modules --ignore=E501,W503
 ```
 
 ---
@@ -59,16 +59,22 @@ flake8 . --max-line-length=100 --exclude=venv,chroma_db
 
 ```
 rag-qa-automation/
-├── ingest/          ← Data loaders (Jira, Confluence, codebase, test results)
-├── pipeline/        ← Chunker, embedder, vector store
-├── qa_outputs/      ← Test generator, Q&A, flaky detector, coverage analyser
-├── api/             ← FastAPI REST endpoints
-└── run.py           ← CLI entrypoint
+├── qa_assistant/       ← the AI tool
+│   ├── sources/        ← readers for Jira, Confluence, test code, test reports
+│   ├── knowledge_base/ ← chunk, embed, store and search (the "R" in RAG)
+│   ├── features/       ← test generator, Q&A, flaky detector, coverage, Jira push
+│   ├── cli.py          ← command line (python -m qa_assistant ...)
+│   └── api.py          ← REST API
+├── demo_app/           ← the website being tested (Angular + FastAPI)
+├── tests/              ← unit/, e2e/ (Cypress), evals/
+└── sample_data/        ← example tickets, test files and reports
 ```
 
-Adding a new data source? Create a loader in `ingest/` following the same pattern as `jira_loader.py`. Each loader should return `List[Dict]` with at minimum: `id`, `source`, `content`.
+Each folder has a README explaining it in plain words.
 
-Adding a new QA output? Create a module in `qa_outputs/` and expose it via both the CLI (`run.py`) and the API (`api/main.py`).
+Adding a new data source? Create a loader in `qa_assistant/sources/` following the same pattern as `jira_loader.py`. Each loader should return `List[Dict]` with at minimum: `id`, `source`, `content`.
+
+Adding a new feature? Create a module in `qa_assistant/features/` and expose it via both the CLI (`qa_assistant/cli.py`) and the API (`qa_assistant/api.py`).
 
 ---
 
@@ -76,7 +82,7 @@ Adding a new QA output? Create a module in `qa_outputs/` and expose it via both 
 
 1. Make sure your branch is up to date with `main`
 2. Write or update tests if relevant
-3. Run linting: `flake8 . --max-line-length=100`
+3. Run the unit tests (`pytest tests/unit`) and linting (see above)
 4. Commit with a clear message (see below)
 5. Open a PR with a description of what changed and why
 

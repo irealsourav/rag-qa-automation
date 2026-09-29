@@ -20,6 +20,13 @@ structure.
   not giant rewrites.
 - Full design and build plan is in docs/rag-design.md — read it before implementing.
 
+## Layout
+- `qa_assistant/` — the AI tool: `sources/` (readers) → `knowledge_base/` (RAG) → `features/`
+- `demo_app/` — the app under test (Angular frontend, FastAPI backend)
+- `tests/` — `unit/` (pytest), `e2e/` (Cypress), `evals/` (AI quality scores)
+- `sample_data/` — example tickets, test files and reports
+Each folder has a plain-English README; keep them up to date when things move.
+
 ## Stack
 Python, ChromaDB, FastAPI, sentence-transformers, LangChain (parts), LangGraph (control
 flow, later), evals (RAGAS / LangSmith / custom).

@@ -1,11 +1,11 @@
 {
   "name": "rag-qa-automation-e2e",
   "private": true,
-  "description": "Cypress tests for the RAG API and the Conduit demo app",
+  "description": "Cypress tests for the demo app and the QA assistant API",
   "scripts": {
-    "cy:rag": "cypress run",
-    "cy:conduit": "cypress run --config-file cypress.conduit.config.js",
-    "cy:open": "cypress open"
+    "test:demo-app": "cypress run --config-file tests/e2e/demo_app.config.js",
+    "test:qa-assistant": "cypress run --config-file tests/e2e/qa_assistant_api.config.js",
+    "cy:open": "cypress open --config-file tests/e2e/demo_app.config.js"
   },
   "devDependencies": {
     "cypress": "^16.1.0"

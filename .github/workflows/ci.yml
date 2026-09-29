@@ -38,16 +38,16 @@ jobs:
 
       - name: Check imports resolve
         run: |
-          python -c "from config import config; print('config OK')"
-          python -c "from pipeline.chunker import TextChunker; print('chunker OK')"
-          python -c "from pipeline.embedder import Embedder; print('embedder OK')"
-          python -c "from ingest.codebase_loader import CodebaseLoader; print('codebase_loader OK')"
-          python -c "from ingest.test_results_loader import TestResultsLoader; print('test_results_loader OK')"
-          python -c "from qa_outputs.llm_utils import response_text; print('llm_utils OK')"
+          python -c "from qa_assistant.config import config; print('config OK')"
+          python -c "from qa_assistant.knowledge_base.chunker import TextChunker; print('chunker OK')"
+          python -c "from qa_assistant.knowledge_base.embedder import Embedder; print('embedder OK')"
+          python -c "from qa_assistant.sources.codebase_loader import CodebaseLoader; print('codebase_loader OK')"
+          python -c "from qa_assistant.sources.test_results_loader import TestResultsLoader; print('test_results_loader OK')"
+          python -c "from qa_assistant.features.llm_utils import response_text; print('llm_utils OK')"
 
       - name: Run unit tests
         run: |
-          pytest tests/ -v --tb=short
+          pytest tests/unit -v --tb=short
 
       - name: Cache embedding model
         uses: actions/cache@v4
@@ -57,8 +57,8 @@ jobs:
 
       - name: Retrieval eval (Jira)
         run: |
-          python -m retrieval.build_index
-          python -m evals.eval_retrieval --min-hit-at-k 0.9 --min-mrr 0.85
+          python -m qa_assistant.knowledge_base.build_jira_index
+          python -m tests.evals.eval_retrieval --min-hit-at-k 0.9 --min-mrr 0.85
         env:
           JIRA_URL: "https://mock.atlassian.net"
           JIRA_TOKEN: "mock_token"
@@ -94,7 +94,7 @@ jobs:
           os.environ['JIRA_TOKEN'] = 'mock'
           os.environ['CONFLUENCE_URL'] = 'https://mock.atlassian.net'
           os.environ['CONFLUENCE_TOKEN'] = 'mock'
-          from api.main import app
+          from qa_assistant.api import app
           print('FastAPI app loaded OK')
           "
 
@@ -167,14 +167,14 @@ jobs:
           CONDUIT_PYTHON: python
         run: |
           npm ci
-          npx cypress run --config-file cypress.conduit.config.js
+          npm run test:demo-app
 
       - name: Upload Cypress screenshots
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: cypress-screenshots
-          path: cypress/screenshots
+          path: tests/e2e/screenshots
           if-no-files-found: ignore
 
       - name: Upload server logs
