@@ -1,0 +1,16 @@
+{
+  "articles": [
+    {
+      "slug": "stubbed-article",
+      "title": "Stubbed article",
+      "description": "Served by cy.intercept, not the backend",
+      "tagList": ["stub"],
+      "createdAt": "2026-01-01T09:00:00.000Z",
+      "updatedAt": "2026-01-01T09:00:00.000Z",
+      "favorited": false,
+      "favoritesCount": 0,
+      "author": { "username": "stub", "bio": null, "image": null, "following": false }
+    }
+  ],
+  "articlesCount": 1
+}

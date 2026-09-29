@@ -35,5 +35,8 @@ htmlcov/
 
 # Cypress
 node_modules/
-cypress/screenshots/
-cypress/videos/
+tests/e2e/screenshots/
+tests/e2e/downloads/
+
+# Demo app
+demo_app/backend/conduit.db

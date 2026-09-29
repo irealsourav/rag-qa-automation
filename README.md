@@ -1,143 +1,83 @@
 # RAG QA Automation
 
-An AI-powered QA automation system built on Retrieval-Augmented Generation (RAG).
-Uses Claude as the LLM, ChromaDB as the vector store and sentence-transformers for embeddings.
+An AI assistant for software testers. It reads what a team already has (Jira tickets,
+existing tests and past test results) and uses that knowledge to help with testing work:
+writing test cases, answering questions about the tests, and explaining why tests fail.
 
-## What it does
+It is a **learning project and a work in progress**. See [Project status](#project-status)
+for what works today and what is still planned.
 
-| Feature | Description |
-|---|---|
-| **Test case generation** | Generates Cypress/pytest/Java tests from Jira stories and Confluence docs |
-| **Codebase Q&A** | Answer natural language questions about your test codebase |
-| **Flaky test detection** | Finds flaky tests from XML reports and suggests root-cause fixes |
-| **Coverage gap analysis** | Compares requirements against tests to find what is not covered |
-
-## Architecture
+## How it works, in one picture
 
 ```
-Data Sources → Ingest → Chunk → Embed → ChromaDB
-                                           ↓
-Query → Retrieve → Claude (LLM) → QA Output
-                                           ↓
-                          CI/CD | IDE | REST API
+  Jira, test code,           Stored as searchable          Claude (the AI) answers
+  test reports         →     "knowledge" (RAG)       →     using that knowledge
+                                                                   ↓
+                                           test cases, answers, flaky-test fixes
 ```
 
-## Setup
+**RAG** (Retrieval-Augmented Generation) means: before asking the AI anything, first look
+up the most relevant pieces of your own documents, and give those to the AI. The answers
+are then based on your project, not just on what the AI generally knows.
 
-```bash
-# 1. Clone and install
-pip install -r requirements.txt
+## What's in this repository
 
-# 2. Configure
-cp .env.example .env
-# Edit .env with your API keys
-
-# 3. Ingest your data
-python run.py ingest all
-
-# 4. Start using it
-python run.py generate "invoice generation feature"
-python run.py ask "where are the login tests?"
-python run.py flaky
-python run.py coverage --feature-area payments
-
-# Or start the API server
-python run.py serve
-```
-
-## Try it with the sample data
-
-`sample_data/` holds two small Cypress specs and three JUnit reports with a few tests
-that pass in some runs and fail in others:
-
-```bash
-python run.py ingest codebase --codebase-path sample_data/codebase
-python run.py ingest test_results --results-path sample_data/reports
-python run.py ask "which checkout tests use fixed waits?"
-TEST_RESULTS_PATH=sample_data/reports python run.py flaky
-```
-
-## CLI Commands
-
-```bash
-python run.py ingest [jira|confluence|codebase|test_results|all]
-python run.py generate "feature description" --framework Cypress --count 5
-python run.py ask "your question about the test codebase"
-python run.py flaky --top-n 10
-python run.py coverage --feature-area "payments"
-python run.py serve
-```
-
-## REST API Endpoints
-
-| Method | Endpoint | Description |
+| Folder | In plain words | Details |
 |---|---|---|
-| GET | `/health` | System status and document counts |
-| POST | `/generate-tests` | Generate test cases for a feature |
-| POST | `/ask` | Ask questions about the codebase |
-| POST | `/detect-flaky` | Analyse a specific flaky test |
-| GET | `/detect-flaky/all` | Detect all flaky tests |
-| POST | `/coverage` | Analyse coverage gaps |
-| POST | `/ingest` | Trigger background ingestion |
+| [`rag_engine/`](rag_engine/) | **The AI tool itself** (the RAG engine). Reads each source (Jira, test code, test reports, ...), stores the knowledge, and offers the features below. | [README](rag_engine/README.md) |
+| [`demo_app/`](demo_app/) | **A small example website to test**: a blogging app called Conduit. It gives the tool and the tests something real to work on. | [README](demo_app/README.md) |
+| [`tests/`](tests/) | **Everything that checks quality**: quick code checks, browser tests of the demo website, and scores for how good the AI's answers are. | [README](tests/README.md) |
+| [`sample_data/`](sample_data/) | **Example inputs**: made-up Jira tickets, test files and test reports, so everything can be tried without real company data. | [README](sample_data/README.md) |
+| [`docs/`](docs/) | **Design notes**: the plan for where this project is going. | [rag-design.md](docs/rag-design.md) |
 
-## Example API calls
+Files at the top level are setup files: `requirements*.txt` (Python packages),
+`package.json` (JavaScript packages for Cypress), `.env.example` (settings template),
+`.github/workflows/` (automatic checks on GitHub).
+
+## What the assistant can do
+
+| Feature | What it does |
+|---|---|
+| Generate test cases | Writes test cases for a feature, based on the tickets and existing tests |
+| Answer questions | "Where are the login tests?", answered from the actual test code |
+| Find flaky tests | Spots tests that sometimes pass and sometimes fail, and suggests why |
+| Find coverage gaps | Compares requirements with tests to show what is not tested |
+| Push tests to Jira | Creates the generated test cases as Jira issues linked to the story |
+| Jira tools for AI chat (MCP) | Lets Claude read Jira, create stories and create manual test cases when you ask it in plain words |
+
+## Quick start
 
 ```bash
-# Generate tests
-curl -X POST http://localhost:8000/generate-tests \
-  -H "Content-Type: application/json" \
-  -d '{"feature": "user login with 2FA", "framework": "Cypress", "count": 5}'
+pip install -r requirements.txt
+cp .env.example .env                     # then add your ANTHROPIC_API_KEY
 
-# Ask about codebase
-curl -X POST http://localhost:8000/ask \
-  -H "Content-Type: application/json" \
-  -d '{"question": "How is API mocking set up in our Cypress tests?"}'
-
-# Coverage analysis
-curl -X POST http://localhost:8000/coverage \
-  -H "Content-Type: application/json" \
-  -d '{"feature_area": "payment processing"}'
+# Load the example data, then ask a question
+python -m rag_engine ingest codebase --codebase-path sample_data/cypress_tests
+python -m rag_engine ask "which checkout tests use fixed waits?"
 ```
+
+More commands are in [rag_engine/README.md](rag_engine/README.md).
+
+## Project status
+
+| Part | Status |
+|---|---|
+| Features above (generate, ask, flaky, coverage, Jira push) | Working |
+| MCP server for Jira (read, create story, create test cases) | Working, tested against a fake Jira; not yet tried on a real Jira site |
+| Jira retrieval layer + retrieval eval ("Path A" in the design notes) | Working, measured on sample data only |
+| Demo app + its browser tests | Working |
+| Knowledge from backend API specs and frontend pages | Not built yet |
+| Self-healing tests (fixing broken selectors automatically) | Not built yet, planned with LangGraph |
+| Scoring the quality of generated tests and fixes | Not built yet |
+
+## Automatic checks on GitHub
+
+| Workflow | When | What it checks |
+|---|---|---|
+| `CI` | every push and pull request to `main` | Code style, unit tests, the retrieval score, and the demo app (its own tests, its API against the official spec, and the Cypress browser tests). Free: no AI calls |
+| `RAG E2E` | only when started by hand | Runs the whole assistant with real AI calls and shows the answers on the run's Summary page. Needs the `ANTHROPIC_API_KEY` secret and costs API credits |
 
 ## Tech stack
 
-- **LLM**: Claude Sonnet 5 (Anthropic), override with `LLM_MODEL` in `.env`
-- **Vector store**: ChromaDB (local, persistent)
-- **Embeddings**: sentence-transformers/all-MiniLM-L6-v2 (local, free)
-- **API**: FastAPI + Uvicorn
-- **CLI**: Typer + Rich
-
-## Testing
-
-**Unit tests** cover the deterministic parts (chunker, loaders, flaky scoring) and need no API key:
-
-```bash
-pip install -r requirements-dev.txt
-pytest tests/
-```
-
-**Cypress API tests** (`cypress/e2e/rag_api.cy.js`) call the running API, so they use Claude.
-Claude's answers change from run to run, so the tests don't compare exact text. They check:
-
-- response structure (e.g. the requested number of `TC-N` test cases)
-- grounding: answers name files that really exist in the index
-- honest "not found" answers for things that were never indexed
-- a minimum pass rate when the same question is asked several times
-- exact results where the output is deterministic (which tests are flaky and their scores)
-
-```bash
-# with the sample data ingested (see above)
-TEST_RESULTS_PATH=sample_data/reports python -m uvicorn api.main:app --port 8000 &
-npm ci
-npx cypress run
-```
-
-## GitHub Actions
-
-| Workflow | Trigger | What it does |
-|---|---|---|
-| `CI` | push / PR to `main` | flake8, import checks, unit tests, API import check. No API key needed |
-| `RAG E2E` | manual (Actions -> RAG E2E -> Run workflow) | Ingests `sample_data/`, starts the API, writes Claude's answers to the run's **Summary** page, then runs the Cypress tests |
-
-`RAG E2E` needs an `ANTHROPIC_API_KEY` repository secret
-(Settings -> Secrets and variables -> Actions) and uses API credits on every run.
+Python, Claude (Anthropic), ChromaDB, sentence-transformers, LangChain, FastAPI, Typer,
+Angular (demo app), Cypress.

@@ -1,0 +1,20 @@
+[
+  {"query": "how is a failed login handled?", "expected_ticket": "QA-102"},
+  {"query": "user logs in successfully", "expected_ticket": "QA-101"},
+  {"query": "creating an account", "expected_ticket": "QA-103"},
+  {"query": "what happens if someone signs up with a name that is already in use?", "expected_ticket": "QA-104"},
+  {"query": "minimum length rule for passwords", "expected_ticket": "QA-105"},
+  {"query": "how does a user sign out?", "expected_ticket": "QA-106"},
+  {"query": "can I change my avatar picture and bio?", "expected_ticket": "QA-107"},
+  {"query": "in what order are posts shown on the home page and how many per page?", "expected_ticket": "QA-108"},
+  {"query": "show only posts written by people I follow", "expected_ticket": "QA-109"},
+  {"query": "narrow the list of posts down to a single topic", "expected_ticket": "QA-110"},
+  {"query": "writing a new blog post with formatting", "expected_ticket": "QA-111"},
+  {"query": "can another user modify or remove my post?", "expected_ticket": "QA-112"},
+  {"query": "liking a post and seeing how many likes it has", "expected_ticket": "QA-113"},
+  {"query": "subscribe to a writer from their profile page", "expected_ticket": "QA-114"},
+  {"query": "removing a reply I left under a post", "expected_ticket": "QA-115"},
+  {"query": "token ran out while the user was idle", "expected_ticket": "QA-116"},
+  {"query": "two posts with identical headings", "expected_ticket": "QA-117"},
+  {"query": "what does the page show when there is nothing to read?", "expected_ticket": "QA-118"}
+]

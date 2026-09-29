@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "rag-qa-jira": {
+      "command": "${RAG_PYTHON:-python}",
+      "args": ["-m", "rag_engine.mcp_server"]
+    }
+  }
+}

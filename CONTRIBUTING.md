@@ -50,7 +50,7 @@ Always branch from `main`.
 
 Run linting before committing:
 ```bash
-flake8 . --max-line-length=100 --exclude=venv,chroma_db
+flake8 . --max-line-length=100 --exclude=venv,chroma_db,node_modules --ignore=E501,W503
 ```
 
 ---
@@ -59,16 +59,26 @@ flake8 . --max-line-length=100 --exclude=venv,chroma_db
 
 ```
 rag-qa-automation/
-├── ingest/          ← Data loaders (Jira, Confluence, codebase, test results)
-├── pipeline/        ← Chunker, embedder, vector store
-├── qa_outputs/      ← Test generator, Q&A, flaky detector, coverage analyser
-├── api/             ← FastAPI REST endpoints
-└── run.py           ← CLI entrypoint
+├── rag_engine/         ← the AI tool (RAG engine)
+│   ├── sources/        ← one folder per source: jira/, confluence/, test_code/, test_reports/
+│   ├── knowledge_base/ ← shared tools: split, embed, store, search
+│   ├── features/       ← test generator, Q&A, flaky detector, coverage, Jira push
+│   ├── cli.py          ← command line (python -m rag_engine ...)
+│   └── api.py          ← REST API
+├── demo_app/           ← the website being tested (Angular + FastAPI)
+├── tests/              ← unit/, e2e/ (Cypress), evals/
+└── sample_data/        ← example tickets, test files and reports
 ```
 
-Adding a new data source? Create a loader in `ingest/` following the same pattern as `jira_loader.py`. Each loader should return `List[Dict]` with at minimum: `id`, `source`, `content`.
+Each folder has a README explaining it in plain words.
 
-Adding a new QA output? Create a module in `qa_outputs/` and expose it via both the CLI (`run.py`) and the API (`api/main.py`).
+Adding a new data source (e.g. Cypress, API specs, Playwright)? Create a folder for it in `rag_engine/sources/`, following `sources/jira/`:
+- `loader.py` reads the source and returns `List[Dict]` with at minimum `id`, `source`, `content`
+- `index.py` splits it by its natural unit (one ticket, one test block, one endpoint), adds metadata and stores it in its own collection with `get_store("<source>")`
+- `retriever.py` searches that collection
+- add questions for it to `tests/evals/` so its retrieval quality is measured
+
+Adding a new feature? Create a module in `rag_engine/features/` and expose it via both the CLI (`rag_engine/cli.py`) and the API (`rag_engine/api.py`).
 
 ---
 
@@ -76,7 +86,7 @@ Adding a new QA output? Create a module in `qa_outputs/` and expose it via both 
 
 1. Make sure your branch is up to date with `main`
 2. Write or update tests if relevant
-3. Run linting: `flake8 . --max-line-length=100`
+3. Run the unit tests (`pytest tests/unit`) and linting (see above)
 4. Commit with a clear message (see below)
 5. Open a PR with a description of what changed and why
 
